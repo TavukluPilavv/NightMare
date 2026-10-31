@@ -9,6 +9,8 @@ on:
       - "index.html"
       - "characters.js"
       - "audio.js"
+      - "props.js"
+      - "products.js"
       - "package.json"
       - "capacitor.config.json"
       - ".github/workflows/main.yml"
@@ -41,7 +43,7 @@ jobs:
       - name: Prepare web game
         run: |
           mkdir -p www
-          cp index.html characters.js audio.js www/
+          cp index.html characters.js audio.js props.js products.js www/
 
       - name: Add Android platform
         run: npx cap add android
