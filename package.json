@@ -4,7 +4,7 @@
   "private": true,
   "description": "Tantuni Cicik - Gece Vardiyasi",
   "scripts": {
-    "build:android": "mkdir -p www && cp index.html www/index.html && cap sync android"
+    "build:android": "mkdir -p www && cp index.html characters.js audio.js props.js products.js www/ && cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "6.2.1",
