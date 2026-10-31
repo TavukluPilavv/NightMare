@@ -1,0 +1,16 @@
+{
+  "name": "nightmare-tantuni-cicik",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tantuni Cicik - Gece Vardiyasi",
+  "scripts": {
+    "build:android": "mkdir -p www && cp index.html www/index.html && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.1",
+    "@capacitor/core": "6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.1"
+  }
+}
