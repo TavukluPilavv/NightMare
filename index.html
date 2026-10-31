@@ -28,7 +28,7 @@
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { createHumanCustomer } from './characters.js';
-import { playTone, playBell, playDoor, playFryer, playScare, startShopAmbience } from './audio.js';
+import { playTone, playBell, playDoor, playFryer, playScare, playCustomerVoice, playFootstep, startShopAmbience } from './audio.js';
 (()=>{
 const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x182432);scene.fog=new THREE.FogExp2(0x24313a,.022);
@@ -122,7 +122,7 @@ try{const saved=localStorage.getItem('tantuniSimPlayer');if(saved){$('playerName
 applyGraphics();
 function sound(f=440,d=.13,type='sine',v=.045){playTone(f,d,type,v)}
 function ring(){phoneRinging=true;playBell();toast('Arka odadaki telefon caliyor!');objective('ARKA ODAYA GIT: TELEFONU AC');sound(880,.2,'square');setTimeout(()=>sound(660,.2,'square'),250);setTimeout(()=>{if(phoneRinging)sound(880,.2,'square')},500)}
-function spawnCustomer(){if(customer)return;customerStrange=day>=2&&Math.random()<.34;const customerVariant=Math.floor(Math.random()*6);customer=makeCustomer(customerStrange,customerVariant,'customer');customer.position.set(0,0,-5.25);objective(customerStrange?'Garip müşteri geldi. Siparişini al…':'Müşteri geldi. Siparişini hazırla.');toast(customerStrange?'Bu müşterinin yüzünde bir tuhaflık var…':'Müşteri sipariş bekliyor.');sound(220,.15)}
+function spawnCustomer(){if(customer)return;customerStrange=day>=2&&Math.random()<.34;const customerVariant=Math.floor(Math.random()*6);customer=makeCustomer(customerStrange,customerVariant,'customer');customer.position.set(0,0,-5.25);objective(customerStrange?'Garip müşteri geldi. Siparişini al…':'Müşteri geldi. Siparişini hazırla.');toast(customerStrange?'Bu müşterinin yüzünde bir tuhaflık var…':'Müşteri sipariş bekliyor.');playCustomerVoice(customerStrange);sound(220,.15)}
 function jumpscare(){if(scareCooldown>0)return;scareCooldown=30;$('scare').classList.remove('hide');playScare();blackout=true;blackTimer=3}
 function powerCut(){if(blackout)return;blackout=true;blackTimer=10;mainLight.intensity=0;counterLight.intensity=0;flashlight.intensity=45;$('blackout').style.opacity='1';$('powerText').style.opacity='1';toast('ELEKTRİKLER KESİLDİ!');sound(55,.6,'sawtooth',.12);if(customerStrange)jumpscare()}
 function restorePower(){blackout=false;mainLight.intensity=34;counterLight.intensity=16;flashlight.intensity=0;$('blackout').style.opacity='0';$('powerText').style.opacity='0';toast('Elektrikler geri geldi.');objective('Gece devam ediyor…');sound(330,.25)}
