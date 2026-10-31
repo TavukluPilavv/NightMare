@@ -7,6 +7,8 @@ on:
       - main
     paths:
       - "index.html"
+      - "characters.js"
+      - "audio.js"
       - "package.json"
       - "capacitor.config.json"
       - ".github/workflows/main.yml"
@@ -39,7 +41,7 @@ jobs:
       - name: Prepare web game
         run: |
           mkdir -p www
-          cp index.html www/index.html
+          cp index.html characters.js audio.js www/
 
       - name: Add Android platform
         run: npx cap add android
