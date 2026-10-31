@@ -39,3 +39,18 @@ export function startShopAmbience() {
     gain.gain.value=.008; osc.connect(filter); filter.connect(gain); gain.connect(master); osc.start();
   } catch {}
 }
+
+export function playCustomerVoice(strange=false) {
+  try {
+    const c=audioContext(), now=c.currentTime;
+    const base=strange?92:145+Math.random()*45;
+    const osc=c.createOscillator(), formant=c.createBiquadFilter(), gain=c.createGain();
+    osc.type=strange?"sawtooth":"triangle";
+    osc.frequency.setValueAtTime(base,now);
+    osc.frequency.exponentialRampToValueAtTime(base*(strange?1.8:1.35),now+.16);
+    formant.type="bandpass"; formant.frequency.value=strange?420:760; formant.Q.value=2.2;
+    gain.gain.setValueAtTime(.001,now);gain.gain.linearRampToValueAtTime(strange?.035:.018,now+.035);gain.gain.exponentialRampToValueAtTime(.001,now+.23);
+    osc.connect(formant);formant.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+.24);
+  } catch {}
+}
+export function playFootstep() { playNoise(.075,.012,240); }
