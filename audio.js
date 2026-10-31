@@ -54,3 +54,19 @@ export function playCustomerVoice(strange=false) {
   } catch {}
 }
 export function playFootstep() { playNoise(.075,.012,240); }
+
+let phoneRingTimer = null;
+export function startPhoneRing() {
+  stopPhoneRing();
+  const burst = () => {
+    playTone(920,.34,"sine",.09);
+    setTimeout(()=>playTone(690,.38,"sine",.085),420);
+    setTimeout(()=>playTone(920,.34,"sine",.09),880);
+    setTimeout(()=>playTone(690,.38,"sine",.085),1300);
+  };
+  burst();
+  phoneRingTimer=setInterval(burst,2300);
+}
+export function stopPhoneRing() {
+  if(phoneRingTimer!==null){clearInterval(phoneRingTimer);phoneRingTimer=null;}
+}
