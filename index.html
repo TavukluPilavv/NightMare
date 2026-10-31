@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#10131a"><title>Tantuni Çiçik — Gece Vardiyası</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}body{margin:0;background:#0d1016;color:#f6f0e7;overflow:hidden;touch-action:none}#game{display:block;width:100vw;height:100dvh;background:#171b22}#hud{position:fixed;inset:0;pointer-events:none}.top{display:flex;justify-content:space-between;gap:8px;padding:10px}.pill{background:#10141ddd;border:1px solid #ffffff22;border-radius:14px;padding:8px 12px;font-weight:800;box-shadow:0 4px 18px #0007}.brand{font-size:14px;letter-spacing:.5px}.money{color:#ffe08a}.hint{position:absolute;top:62px;left:50%;transform:translateX(-50%);max-width:90%;text-align:center;background:#10141de8;border:1px solid #ffffff26;border-radius:12px;padding:8px 12px;font-size:13px}.bottom{position:absolute;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:end}.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px;gap:4px;pointer-events:auto}.ctrl,.action{border:1px solid #ffffff3a;background:#171d29eF;color:white;border-radius:14px;font-size:19px;font-weight:900;touch-action:none;box-shadow:0 5px 14px #0008}.ctrl:active,.action:active{background:#8c492b}.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}.actions{display:flex;gap:8px;pointer-events:auto;align-items:end}.action{font-size:13px;padding:13px 12px;min-width:76px;min-height:52px}.action.primary{background:#8b472b}.action:disabled{opacity:.35}.modal{position:fixed;inset:0;background:#07090bdc;display:grid;place-items:center;padding:22px;z-index:5}.panel{width:min(460px,100%);background:#171d27;border:1px solid #ffffff2c;border-radius:22px;padding:24px;box-shadow:0 15px 60px #000b}.panel h1{margin:0 0 8px;color:#ffca83}.panel p{line-height:1.5;color:#e0ddd6}.panel button{background:#a9502d;border:0;color:white;border-radius:12px;padding:13px 20px;font-weight:900;font-size:16px}.small{font-size:12px;color:#aeb5c1}.hide{display:none!important}@media(min-width:800px){.pad{transform:scale(1.1);transform-origin:bottom left}.actions{transform:scale(1.1);transform-origin:bottom right}}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"><div class="top"><div class="pill brand">🌙 TANTUNİ ÇİÇİK · GECE VARDİYASI</div><div class="pill money">₺ <span id="money">0</span></div><div class="pill">⭐ <span id="served">0</span> sipariş</div></div><div class="hint" id="hint">Tezgâha yaklaş ve malzemeleri hazırla.</div><div class="bottom"><div class="pad"><button class="ctrl up" data-dir="up">▲</button><button class="ctrl left" data-dir="left">◀</button><button class="ctrl down" data-dir="down">▼</button><button class="ctrl right" data-dir="right">▶</button></div><div class="actions"><button class="action" id="help">İPUCU</button><button class="action" id="interact">AL / KOY</button><button class="action primary" id="serve">HAZIRLA / SAT</button></div></div></div>
+<div class="modal" id="intro"><div class="panel"><h1>🌯 Tantuni Çiçik</h1><p>Gece vardiyası başladı. Müşterilere tavuk tantuni hazırla, para kazan ve dükkânını geliştir. Ama gece ilerledikçe gelen herkes normal bir müşteri olmayabilir…</p><p><b>Nasıl oynanır?</b><br>• Ekrandaki yön tuşlarıyla veya WASD ile yürü.<br>• Malzeme kasalarının yanına gidip <b>AL / KOY</b> tuşuna bas.<br>• Tezgâha gelince <b>HAZIRLA / SAT</b> tuşuyla siparişi hazırla ve müşteriye ver.<br>• ₺60 biriktirince kızartma makinesini aç.<br>• İPUCU tuşu sana sıradaki adımı söyler.</p><button id="start">GECEYE BAŞLA</button><p class="small">Sesler oyun içinde otomatik üretilir. Telefon için yatay ekran önerilir.</p></div></div>
+<div class="modal hide" id="scare"><div class="panel"><h1>😨 BİRİSİ GELDİ…</h1><p>Dükkânın kapısındaki müşteri hiç göz kırpmıyor. Sakin ol ve siparişi tamamla!</p><button id="back">DEVAM ET</button></div></div>
+<script>
+(()=> {
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const moneyEl=document.getElementById('money'),servedEl=document.getElementById('served'),hintEl=document.getElementById('hint');
+let W=960,H=540,scale=1,money=0,served=0,upgrade=false,started=false,scareShown=false,scareFlash=0;
+const player={x:465,y:380,r:15,speed:190,held:null};
+const keys={},touch={up:false,down:false,left:false,right:false};
+const stations=[
+ {id:'bread',name:'Ekmek',x:140,y:180,color:'#d99b54'},
+ {id:'chicken',name:'Tavuk',x:290,y:180,color:'#bd7650'},
+ {id:'lettuce',name:'Marul',x:440,y:180,color:'#64a66b'},
+ {id:'onion',name:'Soğan',x:590,y:180,color:'#d9c4a0'},
+ {id:'potato',name:'Patates',x:740,y:180,color:'#c49b5d'}
+];
+let customer={x:800,y:380,active:false,scary:false,order:[],label:'',wait:0};
+const orderItems=['bread','chicken','lettuce','onion','potato'];
+const names={bread:'Ekmek',chicken:'Tavuk tantuni',lettuce:'Marul',onion:'Soğan',potato:'Patates',fries:'Patates kızartması',rings:'Soğan halkası'};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function resize(){const dpr=Math.min(devicePixelRatio||1,2);W=960;H=540;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width='100vw';canvas.style.height='100dvh';ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+function beep(f=440,d=.1,type='sine',vol=.04){try{const ac=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.value=vol;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+function say(t){hintEl.textContent=t}
+function newCustomer(){customer.active=true;customer.x=800;customer.scary=served>=3&&Math.random()<.38;customer.wait=35;customer.order=customer.scary?['bread','chicken','onion']:['bread','chicken',rnd(['lettuce','onion','potato'])];customer.label=customer.scary?'???':'Müşteri';if(customer.scary&&!scareShown){scareShown=true;scareFlash=1;document.getElementById('scare').classList.remove('hide');beep(75,.8,'sawtooth',.12)}say(customer.label+' geldi! İstenenleri hazırla: '+customer.order.map(x=>names[x]).join(', '))}
+function near(x,y){return Math.hypot(player.x-x,player.y-y)<58}
+function interact(){if(!started)return;let station=stations.find(s=>near(s.x,s.y));if(station){player.held=station.id;say(names[station.id]+' aldın. Tezgâha götür!');beep(520,.07);return}if(near(480,370)){if(player.held){say(names[player.held]+' tezgâha kondu.');player.held=null;beep(330,.08)}else say('Malzeme almak için kasalara yaklaş.');return}say('Bir malzeme kasasına veya tezgâha yaklaş.')}
+function serve(){if(!started)return;if(!near(480,370)&&!near(800,380)){say('Sipariş için tezgâha yaklaş.');return}if(!customer.active){say('Şu an müşteri yok. Biraz bekle…');return}if(player.held){say('Elindeki '+names[player.held]+' malzemesini önce AL / KOY ile tezgâha bırak.');return}let price=20;if(upgrade){price=30}money+=price;served++;moneyEl.textContent=money;servedEl.textContent=served;customer.active=false;beep(660,.12);setTimeout(()=>beep(880,.18),110);say('Sipariş teslim edildi! +₺'+price+'  Yeni müşteri yolda.');if(!upgrade&&money>=60){upgrade=true;say('🎉 Kızartma makinesi açıldı! Artık patates kızartması ve soğan halkası satabilirsin.');beep(990,.3)}setTimeout(()=>{if(started&&!customer.active)newCustomer()},2200)}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#252a30';ctx.fillRect(0,0,W,H);
+ctx.fillStyle='#343a3d';ctx.fillRect(25,25,910,490);ctx.strokeStyle='#69716d';ctx.lineWidth=5;ctx.strokeRect(25,25,910,490);
+ctx.fillStyle='#594536';ctx.fillRect(75,110,810,105);ctx.fillStyle='#8c684d';ctx.fillRect(75,110,810,12);
+stations.forEach(s=>{ctx.fillStyle='#47382e';ctx.fillRect(s.x-42,s.y-35,84,70);ctx.fillStyle=s.color;ctx.fillRect(s.x-30,s.y-23,60,44);ctx.fillStyle='#1b1b1b';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText(names[s.id],s.x,s.y+55);});
+ctx.fillStyle='#7d4c31';ctx.fillRect(390,330,180,60);ctx.fillStyle='#d8a06b';ctx.fillRect(398,338,164,12);ctx.fillStyle='#fff';ctx.font='bold 15px system-ui';ctx.fillText('HAZIRLAMA TEZGAHI',480,414);
+ctx.fillStyle='#282b33';ctx.fillRect(755,300,145,105);ctx.fillStyle='#c7a16a';ctx.fillRect(775,316,105,65);ctx.fillStyle='#fff';ctx.font='bold 14px system-ui';ctx.fillText('MÜŞTERİ',827,430);
+if(upgrade){ctx.fillStyle='#444';ctx.fillRect(625,320,80,75);ctx.fillStyle='#d75c30';ctx.fillRect(638,330,54,45);ctx.fillStyle='#fff';ctx.font='11px system-ui';ctx.fillText('KIZARTMA',665,410);ctx.fillText('MAKİNESİ',665,423)}
+if(customer.active){ctx.fillStyle=customer.scary?'#dedede':'#d5a27e';ctx.beginPath();ctx.arc(customer.x,350,22,0,Math.PI*2);ctx.fill();ctx.fillStyle=customer.scary?'#b50024':'#3a2620';ctx.fillRect(customer.x-19,374,38,48);ctx.fillStyle=customer.scary?'red':'#fff';ctx.beginPath();ctx.arc(customer.x-8,347,4,0,Math.PI*2);ctx.arc(customer.x+8,347,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 13px system-ui';ctx.fillText(customer.label,customer.x,320)}
+ctx.fillStyle='#4b9bdf';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#172331';ctx.fillRect(player.x-9,player.y-18,18,7);ctx.fillStyle='#fff';ctx.font='12px system-ui';ctx.fillText('SEN',player.x,player.y+30);
+if(player.held){ctx.fillStyle='#ffe3a3';ctx.font='bold 14px system-ui';ctx.fillText('Elinde: '+names[player.held],player.x,player.y-28)}
+if(scareFlash>0){ctx.fillStyle='rgba(120,0,20,'+(scareFlash*.35)+')';ctx.fillRect(0,0,W,H);scareFlash=Math.max(0,scareFlash-.025)}
+// subtle night vignette
+const g=ctx.createRadialGradient(480,270,100,480,270,600);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.48)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+let last=0;function loop(ts){let dt=Math.min((ts-last)/1000||0,.04);last=ts;if(started){let dx=(keys.ArrowRight||keys.d||touch.right?1:0)-(keys.ArrowLeft||keys.a||touch.left?1:0),dy=(keys.ArrowDown||keys.s||touch.down?1:0)-(keys.ArrowUp||keys.w||touch.up?1:0);let l=Math.hypot(dx,dy)||1;player.x=Math.max(45,Math.min(915,player.x+dx/l*player.speed*dt));player.y=Math.max(70,Math.min(480,player.y+dy/l*player.speed*dt));if(customer.active&&customer.x>800)customer.x-=50*dt;}draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+document.querySelectorAll('[data-dir]').forEach(b=>{const d=b.dataset.dir;const on=e=>{e.preventDefault();touch[d]=true},off=e=>{e.preventDefault();touch[d]=false};b.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,off))});
+addEventListener('keydown',e=>{keys[e.key]=true;if(e.key.toLowerCase()==='e')interact();if(e.key===' '||e.key==='Enter')serve()});addEventListener('keyup',e=>keys[e.key]=false);
+document.getElementById('interact').onclick=interact;document.getElementById('serve').onclick=serve;
+document.getElementById('help').onclick=()=>say(player.held?'Elindeki '+names[player.held]+' malzemesini tezgâha bırak.':'Kasaların yanına git, AL / KOY ile malzeme al. Tezgâhta HAZIRLA / SAT tuşuna bas.');
+document.getElementById('start').onclick=()=>{document.getElementById('intro').classList.add('hide');started=true;newCustomer();beep(440,.12)};
+document.getElementById('back').onclick=()=>document.getElementById('scare').classList.add('hide');
+})();
+</script>
+</body></html>
