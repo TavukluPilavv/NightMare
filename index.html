@@ -321,8 +321,9 @@ function buildWorld(){
  backRoomDoor=createDoor('Arka oda kapısı',4.9,-2.45,1.25);backRoomDoor.position.x=4.25;backRoomDoor.userData.interactive=true;backRoomDoor.userData.name='Arka oda kapısı';
  // Disaridaki acik/kapali tabelasi
  openSign=new THREE.Group();openSign.position.set(0,2.35,7.15);addBox(openSign,'sign board',0,0,0,1.35,.48,.12,mat(0x18251f,.5));const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=180;const signCtx=signCanvas.getContext('2d');signCtx.fillStyle='#1d5c38';signCtx.fillRect(0,0,512,180);signCtx.fillStyle='#fff';signCtx.font='bold 90px sans-serif';signCtx.textAlign='center';signCtx.textBaseline='middle';signCtx.fillText('AÇIK',256,92);const signTexture=new THREE.CanvasTexture(signCanvas);const signFace=new THREE.Mesh(new THREE.PlaneGeometry(1.25,.42),new THREE.MeshBasicMaterial({map:signTexture}));signFace.position.z=.07;openSign.add(signFace);openSign.userData={name:'Açık/Kapalı tabelası',interactive:true,signCtx,signTexture};scene.add(openSign);interactables.push(openSign);
- // Ayri tuvalet binasi, dort kabin ve lavabo
- addBox(scene,'bathroom floor',0,-.13,-20,12,.24,9,mat(0x77736d,.82));addBox(scene,'bathroom left wall',-6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom right wall',6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom back wall',0,1.8,-24.5,12,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front left wall',-3.45,1.8,-15.5,5.1,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front right wall',3.45,1.8,-15.5,5.1,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front lintel',0,3.48,-15.5,1.9,.24,.2,mat(0xb8b4aa));addBox(scene,'bathroom ceiling',0,3.65,-20,12,.18,9,mat(0x33363a));pointLight(0,3,-19,0xe4edff,13,11);
+ // Ayri tuvalet binasi: seramik karolu zemin ve duvarlar.
+ const bathroomFloor=texturedMaterial(0x77736d,'tile',8,6),bathroomWall=texturedMaterial(0xb8b4aa,'tile',8,4);
+ addBox(scene,'bathroom floor',0,-.13,-20,12,.24,9,bathroomFloor);addBox(scene,'bathroom left wall',-6,1.8,-20,.2,3.6,9,bathroomWall);addBox(scene,'bathroom right wall',6,1.8,-20,.2,3.6,9,bathroomWall);addBox(scene,'bathroom back wall',0,1.8,-24.5,12,3.6,.2,bathroomWall);addBox(scene,'bathroom front left wall',-3.45,1.8,-15.5,5.1,3.6,.2,bathroomWall);addBox(scene,'bathroom front right wall',3.45,1.8,-15.5,5.1,3.6,.2,bathroomWall);addBox(scene,'bathroom front lintel',0,3.48,-15.5,1.9,.24,.2,bathroomWall);addBox(scene,'bathroom ceiling',0,3.65,-20,12,.18,9,mat(0x33363a));pointLight(0,3,-19,0xe4edff,13,11);
  bathroomDoor=createDoor('Tuvalet kapısı',0,-15.5,1.8);bathroomDoor.position.x=-.9;
  for(let i=0;i<4;i++){
   const x=-4.5+i*3,porcelain=mat(0xf0eee7,.26),seatMat=mat(0xd5d2ca,.32),chrome=mat(0x9da5a8,.2,.78);
@@ -335,6 +336,10 @@ function buildWorld(){
   const seat=new THREE.Mesh(new THREE.TorusGeometry(.245,.035,10,36),seatMat);seat.scale.set(1,1.16,1);seat.position.set(x+.5,.64,-20.55);seat.rotation.x=Math.PI/2;scene.add(seat);
   const lid=new THREE.Mesh(new THREE.BoxGeometry(.46,.035,.57),porcelain);lid.position.set(x+.5,.68,-20.82);lid.rotation.x=-.12;scene.add(lid);
   const tank=addBox(scene,'toilet cistern',x+.5,.83,-21.05,.52,.78,.24,porcelain);
+  addBox(scene,'toilet paper holder',x+1.03,.76,-20.52,.1,.1,.34,chrome);
+  const paperRoll=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.25,20),mat(0xf4f1e9,.95));paperRoll.rotation.x=Math.PI/2;paperRoll.position.set(x+1.03,.78,-20.52);scene.add(paperRoll);
+  const brushCup=new THREE.Mesh(new THREE.CylinderGeometry(.09,.105,.28,16),mat(0xe8e5dd,.35));brushCup.position.set(x-.2,.14,-20.95);scene.add(brushCup);
+  const brushHandle=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.58,10),chrome);brushHandle.position.set(x-.2,.55,-20.95);scene.add(brushHandle);
   const flush=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.025,12),chrome);flush.rotation.x=Math.PI/2;flush.position.set(x+.5,1.12,-20.91);scene.add(flush);
  }
  const sink=new THREE.Group();sink.position.set(4.75,0,-16.7);
@@ -346,6 +351,12 @@ function buildWorld(){
  const faucet=new THREE.Mesh(new THREE.TubeGeometry(faucetCurve,24,.035,10,false),chrome);sink.add(faucet);
  const faucetLever=new THREE.Mesh(new THREE.BoxGeometry(.3,.035,.045),chrome);faucetLever.position.set(0,1.29,-.3);sink.add(faucetLever);
  const drain=new THREE.Mesh(new THREE.CircleGeometry(.075,20),chrome);drain.rotation.x=-Math.PI/2;drain.position.set(0,.94,.02);sink.add(drain);
+ // Ayna, sabunluk ve el kurutma cihazi.
+ const mirrorFrame=addBox(scene,'bathroom mirror frame',5.78,2.15,-16.7,.12,1.28,1.12,chrome);
+ const mirror=new THREE.Mesh(new THREE.PlaneGeometry(.92,1.08),new THREE.MeshPhysicalMaterial({color:0x9db7c2,metalness:.78,roughness:.12,clearcoat:1}));mirror.rotation.y=-Math.PI/2;mirror.position.set(5.705,2.15,-16.7);scene.add(mirror);
+ const soap=new THREE.Mesh(new THREE.BoxGeometry(.2,.32,.16),mat(0xe9e2d3,.38));soap.position.set(4.25,1.28,-16.7);scene.add(soap);
+ const soapPump=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.12,10),chrome);soapPump.position.set(4.25,1.5,-16.7);scene.add(soapPump);
+ addBox(scene,'hand dryer',5.72,1.7,-18.35,.34,.48,.28,mat(0xe2e4e1,.35,.25));
  sink.userData={name:'Lavabo',interactive:true};scene.add(sink);interactables.push(sink);
  emergencyLamp=pointLight(0,3.2,-.1,0xffa24b,0,14);
  flashlight=new THREE.SpotLight(0xffe4b7,0,24,Math.PI/7,.42,1.25);camera.add(flashlight);flashlight.position.set(0,0,0);flashlight.target.position.set(0,0,-1);camera.add(flashlight.target);scene.add(camera);
