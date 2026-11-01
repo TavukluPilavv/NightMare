@@ -60,3 +60,15 @@ export function createSauceBottle(THREE,color) {
  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,.12,16),plastic);neck.position.y=.55;g.add(neck);
  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.07,16),new THREE.MeshStandardMaterial({color:0x252525}));cap.position.y=.645;g.add(cap);return g;
 }
+export function createPotatoCutter(THREE, mat) {
+ const g=new THREE.Group(),steel=mat(0x9aa4a6,.28,.72),dark=mat(0x252d31,.5,.5),handleMat=mat(0x6b7478,.32,.65);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(.82,.34,.72),steel);base.position.y=.17;base.castShadow=true;g.add(base);
+ const feed=new THREE.Mesh(new THREE.BoxGeometry(.48,.3,.42),dark);feed.position.set(0,.48,-.02);feed.castShadow=true;g.add(feed);
+ const chute=new THREE.Mesh(new THREE.BoxGeometry(.38,.12,.34),mat(0x3d4548,.4,.55));chute.position.set(0,.27,.42);chute.rotation.x=-.35;g.add(chute);
+ const lever=new THREE.Group();lever.position.set(.34,.58,-.12);g.add(lever);
+ const arm=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.52,12),handleMat);arm.position.y=.22;arm.rotation.z=-.45;lever.add(arm);
+ const grip=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.16,12),dark);grip.position.set(-.12,.45,0);grip.rotation.z=Math.PI/2;lever.add(grip);
+ const feet=mat(0x30373b,.7);for(const x of [-.3,.3])for(const z of [-.25,.25]){const foot=new THREE.Mesh(new THREE.CylinderGeometry(.045,.05,.08,10),feet);foot.position.set(x,.0,z);g.add(foot)}
+ g.userData.activate=()=>{lever.rotation.z=-.35;setTimeout(()=>{lever.rotation.z=0},240)};
+ return g;
+}
