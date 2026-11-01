@@ -212,9 +212,9 @@ function makeCar(x,z,color,direction){
  const tailLamp=new THREE.MeshStandardMaterial({color:0xa32925,emissive:0x8c100b,emissiveIntensity:.75,roughness:.3});
  for(const side of [-.48,.48]){addBox(g,'headlight',1.305,.76,side,.04,.19,.25,headlamp);addBox(g,'tail light',-1.31,.72,side,.04,.2,.23,tailLamp)}
  for(const a of [-.78,.78])for(const b of [-.56,.56]){
-  const w=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.18,24),rubber);w.rotation.z=Math.PI/2;w.position.set(a,.31,b);w.castShadow=true;g.add(w);
-  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.19,20),chrome);hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub);
-  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.2,16),mat(0x30383c,.28,.7));cap.rotation.z=Math.PI/2;cap.position.copy(w.position);g.add(cap);
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.18,24),rubber);w.rotation.x=Math.PI/2;w.position.set(a,.31,b);w.castShadow=true;g.add(w);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.19,20),chrome);hub.rotation.x=Math.PI/2;hub.position.copy(w.position);g.add(hub);
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.2,16),mat(0x30383c,.28,.7));cap.rotation.x=Math.PI/2;cap.position.copy(w.position);g.add(cap);
  }
  g.position.set(x,0,z);g.rotation.y=direction>0?-Math.PI/2:Math.PI/2;g.userData.direction=direction;
  g.userData.wheels=[];for(const wheel of g.children){if(wheel.geometry?.type==='CylinderGeometry'&&wheel.position.y<.4)g.userData.wheels.push(wheel)}
@@ -256,7 +256,11 @@ function buildWorld(){
   const z=16+i*9;
   for(const side of [-1,1]){
    const cx=side*19.25,frontX=side*14.9,wallMat=mat(i%2?0x39454b:0x303e49,.88),frame=mat(0x252d33,.4,.38);
-   addBox(scene,'bazaar shop shell',cx,2.45,z,8.7,4.9,8.35,wallMat);
+   addBox(scene,'bazaar shop rear wall',side*23.48,2.45,z,.22,4.9,8.35,wallMat);
+   addBox(scene,'bazaar shop side wall A',cx,2.45,z-4.12,8.7,4.9,.22,wallMat);
+   addBox(scene,'bazaar shop side wall B',cx,2.45,z+4.12,8.7,4.9,.22,wallMat);
+   addBox(scene,'bazaar shop roof',cx,4.92,z,8.7,.2,8.35,mat(0x252d32,.82));
+   addBox(scene,'bazaar shop floor',cx,-.02,z,8.45,.12,8.1,texturedMaterial(0x6c6256,'tile',5,5));
    addBox(scene,'shop front fascia',frontX-side*.045,3.95,z,.16,.72,8.1,mat(0x202b32,.55,.22));
    for(const offset of [-2.35,2.35]){
     addBox(scene,'shop window frame',frontX-side*.12,1.95,z+offset,.18,1.55,1.8,frame);
@@ -594,7 +598,7 @@ function animate(now=0){
   if(started&&camera.position.z>6){
   for(const car of cars){
    car.position.z+=car.userData.direction*dt*7.0;
-   for(const wheel of car.userData.wheels||[])wheel.rotation.x+=dt*car.userData.direction*7/.25;
+   for(const wheel of car.userData.wheels||[])wheel.rotation.z+=dt*car.userData.direction*7/.25;
    if(car.userData.direction>0&&car.position.z>59)car.position.z=10;
    if(car.userData.direction<0&&car.position.z<10)car.position.z=59;
   }
