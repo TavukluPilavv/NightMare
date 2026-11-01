@@ -14,7 +14,8 @@ export function createHumanCustomer(THREE, options = {}) {
   const torso=add(new THREE.CapsuleGeometry(.29+(variant%3)*.025,.56+(variant%2)*.1,6,16),shirt,0,1.13,0);torso.scale.set(1,.98,.72);
   const neck=add(new THREE.CylinderGeometry(.095,.12,.18,14),skin,0,1.64,0);
   const head=new THREE.Group();head.position.set(0,1.83,0);group.add(head);
-  const skull=add(new THREE.SphereGeometry(.255,28,22),skin,0,1.83,0);head.add(skull);skull.position.set(0,0,0);
+  const skull=add(new THREE.SphereGeometry(.255,32,24),skin,0,1.83,0);head.add(skull);skull.position.set(0,0,0);skull.scale.set(.94,1.08,.96);
+  for(const x of [-.245,.245]){const ear=add(new THREE.SphereGeometry(.065,14,10),skin,x,-.015,-.005);ear.scale.set(.72,1.05,.72);head.add(ear)}
   const hairCap=add(new THREE.SphereGeometry(.265,24,16,0,Math.PI*2,0,Math.PI*.58),hair,0,.055,.015);head.add(hairCap);
   if(variant%3===1){const fringe=add(new THREE.BoxGeometry(.42,.075,.16),hair,0,-.025,-.205);head.add(fringe)}
   if(variant%3===2){const beard=add(new THREE.SphereGeometry(.16,18,12),hair,0,-.15,-.16);beard.scale.set(1,.62,.48);head.add(beard)}
@@ -31,7 +32,7 @@ export function createHumanCustomer(THREE, options = {}) {
   const nose=add(new THREE.SphereGeometry(.035,12,9),skin,0,-.035,-.245);nose.scale.set(.75,.8,.8);
   for(const x of [-.39,.39]){
     const shoulder=add(new THREE.SphereGeometry(.13,14,10),shirt,x,1.39,0);
-    const arm=add(new THREE.CapsuleGeometry(.075,.48,5,10),shirt,x,1.12,0);arm.rotation.z=x<0?-.12:.12;arms.push(arm);
+    const arm=add(new THREE.CapsuleGeometry(.078,.54,6,12),shirt,x,1.12,0);arm.rotation.z=x<0?-.12:.12;arms.push(arm);
     const hand=add(new THREE.SphereGeometry(.085,14,10),skin,x,.81,-.015);hands.push(hand);
   }
   for(const x of [-.16,.16]){
@@ -55,15 +56,15 @@ export function createHumanCustomer(THREE, options = {}) {
     group.userData.expression=kind;
   };
   group.userData.animate=(time,walking=false)=>{
-    const phase=time*7+group.userData.walkPhase;
-    const swing=walking?Math.sin(phase)*.48:Math.sin(time*1.6+group.userData.walkPhase)*.025;
+    const phase=time*9.2+group.userData.walkPhase;
+    const swing=walking?Math.sin(phase)*.58:Math.sin(time*1.6+group.userData.walkPhase)*.035;
     arms[0].rotation.x=swing;arms[1].rotation.x=-swing;
     arms[0].rotation.z=-.12+Math.max(0,Math.sin(phase))*.12;
     arms[1].rotation.z=.12-Math.max(0,Math.sin(phase+Math.PI))*.12;
     legs[0].rotation.x=-swing*.82;legs[1].rotation.x=swing*.82;
     group.position.y=walking?Math.abs(Math.sin(phase*2))*.035:Math.sin(time*1.8+group.userData.walkPhase)*.008;
     group.rotation.y=Math.sin(time*1.1+variant)*.025;
-    head.rotation.y=Math.sin(time*.8+variant)*.045;
+    head.rotation.y=Math.sin(time*.8+variant)*.06;
     group.userData.blinkAt-=.016;
     if(group.userData.blinkAt<=0){group.userData.blink=.16;group.userData.blinkAt=2.2+Math.random()*4}
     if(group.userData.blink>0){group.userData.blink-=.016;const shut=group.userData.blink>.055?1:Math.max(.05,group.userData.blink/.055);lids.forEach(l=>{l.scale.y=1+(1-shut)*13;l.position.y=.055-(1-shut)*.018})}
