@@ -145,6 +145,8 @@ function putHeldItem(){
 }
 function throwHeldItem(){
  if(!heldItem){toast('Atacak ürün yok.');return}
+ const spoiledName=heldItem.startsWith('Bozuk ')?heldItem.slice(6):null;
+ if(spoiledName){spoiledItems.delete(spoiledName);const model=items.find(o=>o.userData.name===spoiledName);if(model)model.visible=false;}
  toast(heldItem+' çöpe atıldı.');heldItem=null;updateHandHud();
 }
 function serveOrder(){
