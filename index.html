@@ -52,7 +52,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;tou
  <div class="top">
   <div class="chip">🌯 TANTUNİ ÇİÇİK</div><div class="chip" id="playerHud">👤 Oyuncu</div><div class="chip">GECE <span id="day">1</span></div><div class="chip">₺<span id="money">0</span></div><div class="chip">SİPARİŞ <span id="orders">0</span></div>
  </div>
- <div class="objective" id="objective">Çarşıdasın. TANTUNİTEK dükkânına doğru yürü.</div><div id="fpsCounter" style="position:absolute;left:9px;top:calc(env(safe-area-inset-top) + 48px);background:#08111cbb;border:1px solid #ffffff33;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800">FPS: -- / 60</div>
+ <div class="objective" id="objective">Çarşıdasın. TANTUNİTEK dükkânına doğru yürü.</div><div id="fpsCounter" style="position:absolute;left:9px;bottom:calc(env(safe-area-inset-bottom) + 155px);background:#08111cbb;border:1px solid #ffffff33;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800">FPS: -- / 60</div>
  <div id="orderHud"></div><div id="heldHud"></div><div class="reticle"></div><div class="toast" id="toast"></div><div id="dialogue" class="dialogue hide"><div id="dialogueName"></div><div id="dialogueText"></div></div>
  <div class="joystick" id="joy"><div class="stick" id="stick"></div></div><div class="look" id="look"></div><div class="lookhint">Sağ taraf: etrafa bak</div>
  <button id="settingsBtn">⚙ AYARLAR</button>
@@ -529,7 +529,7 @@ function animate(now=0){
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
  }
  if(now-lastPerfCheck>2200&&frameSamples>30){const avg=frameTimeTotal/frameSamples;if(avg>27&&quality!=='low'){quality='low';$('quality').value='low';applyQuality();toast('Akıcılık için grafikler otomatik düşürüldü.')}lastPerfCheck=now;frameSamples=0;frameTimeTotal=0}
- frameSamples++;frameTimeTotal+=dt*1000;if(now-lastRenderAt>=1000/targetFPS){lastRenderAt=now;renderer.render(scene,camera);fpsFrames++;if(now-fpsLastUpdate>=1000){measuredFPS=fpsFrames*1000/Math.max(1,now-fpsLastUpdate);fpsFrames=0;fpsLastUpdate=now;$('fpsCounter').textContent='FPS: '+Math.round(measuredFPS)+' / '+targetFPS}}
+ frameSamples++;frameTimeTotal+=dt*1000;const renderInterval=1000/targetFPS;if(now-lastRenderAt>=renderInterval){if(lastRenderAt===0)lastRenderAt=now;else lastRenderAt+=renderInterval;if(now-lastRenderAt>renderInterval*2)lastRenderAt=now;renderer.render(scene,camera);fpsFrames++;if(now-fpsLastUpdate>=1000){measuredFPS=fpsFrames*1000/Math.max(1,now-fpsLastUpdate);fpsFrames=0;fpsLastUpdate=now;$('fpsCounter').textContent='FPS: '+Math.round(measuredFPS)+' / '+targetFPS}}
 }
 function playNoiseSafe(){playTone(180,.08,'triangle',.03)}
 function setupControls(){
