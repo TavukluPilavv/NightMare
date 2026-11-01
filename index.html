@@ -215,7 +215,7 @@ function buildWorld(){
  cutterGroup=createPotatoCutter(THREE,mat);cutterGroup.position.set(3.95,1.32,-2.05);register(cutterGroup,'Patates doğrama makinesi','cutter');
  const bin=createTrashBin(THREE,mat);bin.position.set(5.05,0,-1.45);register(bin,'Çöp kutusu','bin');
  // Paspas ve kirli zemin
- mopGroup=createMopModel(THREE,mat);mopGroup.position.set(4.55,0,-4.15);mopGroup.rotation.y=.45;register(mopGroup,'Paspas','mop');
+ mopGroup=createMopModel(THREE,mat);mopGroup.position.set(4.45,0,-5.55);mopGroup.rotation.y=.45;register(mopGroup,'Paspas','mop');
  stains=[];for(const [x,z,r] of [[-3.6,1.9,.48],[2.9,2.2,.55],[-1.2,-2.1,.38]]){const dirty=new THREE.Mesh(new THREE.CircleGeometry(r,28),mat(0x17120f,.98));dirty.rotation.x=-Math.PI/2;dirty.position.set(x,.018,z);dirty.userData={name:'Kirli zemin',interactive:true};scene.add(dirty);interactables.push(dirty);stains.push(dirty);dirty.visible=false}stain=stains[0];
  // Arka cikis kapisi ve dis salter
  backDoor=createDoor('Arka çıkış kapısı',4.05,-5.72,1.8);
@@ -284,8 +284,8 @@ function makeOrder(){
  if(Math.random()<.68)items.push('Domates');if(Math.random()<.34)items.push('Ketçap');if(Math.random()<.28)items.push('Mayonez');if(Math.random()<.18)items.push('Hardal');
  if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
  const count=1+Math.floor(Math.random()*3);currentOrder={items,count,createdAt:elapsed};updateOrderHud();
- toast(customerStrange?'Müşteri: Ne biçim servis bu lan? '+count+' tantuni istiyorum, hızlı ol.':'Müşteri: Kolay gelsin usta! '+count+' tane tavuk tantuni alabilir miyim?');objective('Müşterinin istediği '+count+' tantuniyi hazırla. Malzemeleri ekmeğin içine koy.');playCustomerTalk(customerStrange);
  if(!customer)spawnCustomer();
+ toast(customerStrange?'Müşteri: Ne biçim servis bu lan? '+count+' tantuni istiyorum, hızlı ol.':'Müşteri: Kolay gelsin usta! '+count+' tane tavuk tantuni alabilir miyim?');objective('Müşterinin istediği '+count+' tantuniyi hazırla. Malzemeleri ekmeğin içine koy.');playCustomerTalk(customerStrange);
 }
 function ringPhone(){
  if(phoneRinging||currentOrder)return;phoneRinging=true;startPhoneRing();toast('Telefon çalıyor! Arka tezgahtaki telefonu aç.');objective('TELEFONU AÇ: Sipariş geliyor.');
