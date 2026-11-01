@@ -31,13 +31,18 @@ export function createHumanCustomer(THREE, options = {}) {
   const mouth=add(new THREE.CapsuleGeometry(.012,.075,3,8),mat(strange?0x18070b:0x713d37),0,-.105,-.235);mouth.rotation.z=Math.PI/2;
   const nose=add(new THREE.SphereGeometry(.035,12,9),skin,0,-.035,-.245);nose.scale.set(.75,.8,.8);
   for(const x of [-.39,.39]){
-    const shoulder=add(new THREE.SphereGeometry(.13,14,10),shirt,x,1.39,0);
-    const arm=add(new THREE.CapsuleGeometry(.078,.54,6,12),shirt,x,1.12,0);arm.rotation.z=x<0?-.12:.12;arms.push(arm);
-    const hand=add(new THREE.SphereGeometry(.085,14,10),skin,x,.81,-.015);hands.push(hand);
+    add(new THREE.SphereGeometry(.13,16,12),shirt,x,1.39,0);
+    const armPivot=new THREE.Group();armPivot.position.set(x,1.38,0);group.add(armPivot);
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.078,.54,6,12),shirt);arm.position.set(0,-.31,0);arm.castShadow=true;armPivot.add(arm);arms.push(armPivot);
+    const elbow=new THREE.Mesh(new THREE.SphereGeometry(.078,12,10),shirt);elbow.position.set(0,-.57,0);armPivot.add(elbow);
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(.082,16,12),skin);hand.position.set(0,-.68,-.018);hand.scale.set(.92,1.08,.9);armPivot.add(hand);hands.push(hand);
+    for(let finger=0;finger<4;finger++){const digit=new THREE.Mesh(new THREE.CapsuleGeometry(.012,.055,3,6),skin);digit.position.set((finger-1.5)*.027,-.755,-.045);digit.rotation.x=-.22;armPivot.add(digit)}
   }
   for(const x of [-.16,.16]){
-    const leg=add(new THREE.CapsuleGeometry(.085,.43,5,10),pants,x,.39,0);legs.push(leg);
-    const foot=add(new THREE.BoxGeometry(.19,.12,.32),shoe,x,.075,-.045);foot.rotation.y=x*.2;
+    const hip=new THREE.Group();hip.position.set(x,.72,0);group.add(hip);
+    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.43,6,12),pants);leg.position.set(0,-.3,0);leg.castShadow=true;hip.add(leg);legs.push(hip);
+    const knee=new THREE.Mesh(new THREE.SphereGeometry(.086,12,10),pants);knee.position.set(0,-.52,-.005);hip.add(knee);
+    const foot=new THREE.Mesh(new THREE.BoxGeometry(.19,.12,.32),shoe);foot.position.set(0,-.65,-.055);foot.rotation.y=x*.2;foot.castShadow=true;hip.add(foot);
   }
   if(role==="courier"){
     add(new THREE.BoxGeometry(.52,.62,.22),mat(0xb74627),0,1.08,.28);
@@ -55,19 +60,19 @@ export function createHumanCustomer(THREE, options = {}) {
     mouth.scale.x=smile?1.2:1;
     group.userData.expression=kind;
   };
-  group.userData.animate=(time,walking=false)=>{
+  group.userData.animate=(time,walking=false,dt=1/60)=>{
     const phase=time*9.2+group.userData.walkPhase;
     const swing=walking?Math.sin(phase)*.58:Math.sin(time*1.6+group.userData.walkPhase)*.035;
     arms[0].rotation.x=swing;arms[1].rotation.x=-swing;
     arms[0].rotation.z=-.12+Math.max(0,Math.sin(phase))*.12;
     arms[1].rotation.z=.12-Math.max(0,Math.sin(phase+Math.PI))*.12;
     legs[0].rotation.x=-swing*.82;legs[1].rotation.x=swing*.82;
-    group.position.y=walking?Math.abs(Math.sin(phase*2))*.035:Math.sin(time*1.8+group.userData.walkPhase)*.008;
+    group.position.y=walking?Math.abs(Math.sin(phase*2))*.035:Math.sin(time*1.8+group.userData.walkPhase)*.008;torso.rotation.z=walking?Math.sin(phase)*.025:Math.sin(time*.7)*.008;neck.rotation.z=Math.sin(time*.9+variant)*.025;
     group.rotation.y=Math.sin(time*1.1+variant)*.025;
     head.rotation.y=Math.sin(time*.8+variant)*.06;
-    group.userData.blinkAt-=.016;
+    group.userData.blinkAt-=dt;
     if(group.userData.blinkAt<=0){group.userData.blink=.16;group.userData.blinkAt=2.2+Math.random()*4}
-    if(group.userData.blink>0){group.userData.blink-=.016;const shut=group.userData.blink>.055?1:Math.max(.05,group.userData.blink/.055);lids.forEach(l=>{l.scale.y=1+(1-shut)*13;l.position.y=.055-(1-shut)*.018})}
+    if(group.userData.blink>0){group.userData.blink-=dt;const shut=group.userData.blink>.055?1:Math.max(.05,group.userData.blink/.055);lids.forEach(l=>{l.scale.y=1+(1-shut)*13;l.position.y=.055-(1-shut)*.018})}
     else lids.forEach(l=>{l.scale.y=1;l.position.y=.055});
   };
   if(strange)group.userData.setExpression("angry");
