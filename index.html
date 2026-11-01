@@ -122,6 +122,27 @@ const clock=new THREE.Clock(),raycaster=new THREE.Raycaster(),pointer=new THREE.
 let targetFPS=60,lastRenderAt=0,fpsFrames=0,fpsLastUpdate=0,measuredFPS=0;
 let yaw=0,pitch=0,moveX=0,moveY=0,joyId=null,lookId=null,lastLookX=0,lastLookY=0,desktopKeys={};
 
+const SAVE_KEY='nightmare_progress_v1';
+function loadProgress(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+  if(!saved||saved.version!==1)return;
+  money=Math.max(0,Math.floor(Number(saved.money)||0));
+  orders=Math.max(0,Math.floor(Number(saved.orders)||0));
+  day=Math.max(1,Math.floor(Number(saved.day)||1));
+  fryerUnlocked=!!saved.fryerUnlocked;
+  ringsUnlocked=!!saved.ringsUnlocked&&fryerUnlocked;
+  if(['low','medium','high'].includes(saved.quality))quality=saved.quality;
+  if([30,40,60].includes(Number(saved.targetFPS)))targetFPS=Number(saved.targetFPS);
+ }catch(error){console.warn('Kayıt dosyası okunamadı:',error)}
+}
+function saveProgress(){
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify({version:1,money,orders,day,fryerUnlocked,ringsUnlocked,quality,targetFPS}));
+ }catch(error){console.warn('Oyun kaydı yazılamadı:',error)}
+}
+loadProgress();
+
 const mat=(color,roughness=.8,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
 function texturedMaterial(color,kind='concrete',repeatX=5,repeatY=5){
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const ctx=canvas.getContext('2d');
@@ -245,7 +266,7 @@ function buildWorld(){
  // Hazirlama tahtasi, mangal, fritoz ve cop
  boardGroup=createPrepBoard(THREE,mat);boardGroup.position.set(0,1.39,-3.35);register(boardGroup,'Hazırlama tahtası','board');
  grillGroup=createGrill(THREE,mat);grillGroup.position.set(2.2,1.32,-3.48);register(grillGroup,'Mangal','grill');
- fryerGroup=createFryer(THREE,mat);fryerGroup.position.set(4.25,1.32,-3.48);fryerGroup.visible=false;register(fryerGroup,'Kızartma makinesi','fryer');
+ fryerGroup=createFryer(THREE,mat);fryerGroup.position.set(4.25,1.32,-3.48);fryerGroup.visible=fryerUnlocked;register(fryerGroup,'Kızartma makinesi','fryer');
  cutterGroup=createPotatoCutter(THREE,mat);cutterGroup.position.set(3.95,1.32,-2.05);register(cutterGroup,'Patates doğrama makinesi','cutter');
  const bin=createTrashBin(THREE,mat);bin.position.set(5.05,0,-1.45);register(bin,'Çöp kutusu','bin');
  // Paspas ve kirli zemin
@@ -303,6 +324,7 @@ function updateHud(){
  $('unlockRingsBtn').textContent=ringsUnlocked?'✓ SOĞAN HALKASI AÇILDI':'SOĞAN HALKASI · ₺180';
  $('unlockFryerBtn').disabled=fryerUnlocked;$('unlockRingsBtn').disabled=ringsUnlocked||!fryerUnlocked;
  $('unlockFryerBtn').style.opacity=fryerUnlocked?'.55':'1';$('unlockRingsBtn').style.opacity=ringsUnlocked?'.55':fryerUnlocked?'1':'.55';
+ saveProgress();
 }
 function updateTicket(){}
 function missingItems(){if(!currentOrder)return[];const missing={};for(let i=0;i<currentOrder.count;i++){const bread=breadVisuals[i];for(const item of currentOrder.items){const done=item==='Ekmek'?!!bread:!!bread?.userData.contents?.includes(item);if(!done)missing[item]=(missing[item]||0)+1}}return Object.entries(missing).map(([item,count])=>item+' x'+count)}
@@ -532,7 +554,7 @@ function animate(now=0){
    if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
    if(shiftStarted&&!shiftClosing&&elapsed-shiftStartElapsed>=180){beginClosingShift()}
    if(customer&&customerLeaving){customer.position.z+=dt*1.45;customer.userData.animate?.(elapsed,true,dt);if(customer.position.z>10){removeCustomer();customerLeaving=false}}else if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*1.28);customer.userData.animate?.(elapsed,true,dt)}else if(customer){customer.userData.animate?.(elapsed,false,dt)}
-   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*1.48);courier.userData.animate?.(elapsed,true,dt)}else if(courier&&courierLeaving){courier.position.z+=dt*1.8;courier.userData.animate?.(elapsed,true);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false,dt)}
+   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*1.48);courier.userData.animate?.(elapsed,true,dt)}else if(courier&&courierLeaving){courier.position.z+=dt*1.8;courier.userData.animate?.(elapsed,true,dt);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false,dt)}
    if(customer&&customerStrange&&currentOrder&&customer.position.z<=1.58&&elapsed>=nextStrangeScareAt&&scareCooldown<=0){nextStrangeScareAt=elapsed+38+Math.random()*45;if(Math.random()<.13){const behind=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));apparition=createHumanCustomer(THREE,{strange:true,variant:7,role:'customer'});apparition.scale.setScalar(1.1);apparition.position.copy(camera.position).addScaledVector(behind,1.25);apparition.position.y=0;scene.add(apparition);apparitionTimer=2.2;jumpscare('Arkana biri geldi! Bir anda ensende nefesini hissettin.')}}
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
@@ -566,8 +588,8 @@ function setupControls(){
  $('continueScare').addEventListener('click',()=>{$('scare').classList.add('hide');scareActive=false;removeBlackoutFigure();if(customerStrange){removeCustomer();toast('Müşteri ortadan kayboldu…')}});
  $('settingsBtn').addEventListener('click',()=>{$('playerName').value=$('playerHud').textContent.replace('👤 ','');$('settingsModal').classList.remove('hide')});
  $('closeSettings').addEventListener('click',()=>$('settingsModal').classList.add('hide'));
- $('quality').value=quality;$('fpsCounter').textContent='FPS: -- / '+targetFPS;
- $('saveSettings').addEventListener('click',()=>{const name=$('playerName').value.trim()||'Oyuncu';$('playerHud').textContent='👤 '+name;quality=$('quality').value;targetFPS=Number($('fpsCap').value)||60;lastRenderAt=0;const size=Number($('joySize').value);$('joy').style.width=size+'px';$('joy').style.height=size+'px';$('stick').style.left=((size-50)/2)+'px';$('stick').style.top=((size-50)/2)+'px';applyQuality();$('settingsModal').classList.add('hide');toast('Ayarlar kaydedildi.')});
+ $('quality').value=quality;$('fpsCap').value=String(targetFPS);$('fpsCounter').textContent='FPS: -- / '+targetFPS;
+ $('saveSettings').addEventListener('click',()=>{const name=$('playerName').value.trim()||'Oyuncu';$('playerHud').textContent='👤 '+name;quality=$('quality').value;targetFPS=Number($('fpsCap').value)||60;lastRenderAt=0;const size=Number($('joySize').value);$('joy').style.width=size+'px';$('joy').style.height=size+'px';$('stick').style.left=((size-50)/2)+'px';$('stick').style.top=((size-50)/2)+'px';applyQuality();saveProgress();$('settingsModal').classList.add('hide');toast('Ayarlar kaydedildi.')});
  const joy=$('joy'),stick=$('stick');function joyMove(e){const r=joy.getBoundingClientRect();let x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=Math.max(32,r.width*.34);if(len>max){x=x/len*max;y=y/len*max}stick.style.transform='translate('+x+'px,'+y+'px)';moveX=x/max;moveY=-y/max}
  joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)},{passive:false});
  joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});
