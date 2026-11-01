@@ -105,7 +105,8 @@ let quality=(innerWidth<900||((navigator.deviceMemory||8)<=4)||((navigator.hardw
 function applyQuality(){
  const ratio=quality==='low'?Math.min(devicePixelRatio,.68):quality==='high'?Math.min(devicePixelRatio,1.15):Math.min(devicePixelRatio,.88);
  renderer.setPixelRatio(ratio);renderer.setSize(innerWidth,innerHeight);
- renderer.shadowMap.enabled=false;
+ renderer.shadowMap.enabled=quality!=='low';
+ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.setClearColor(0x080d14,1);
 }
 renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;
@@ -228,6 +229,7 @@ function makeCar(x,z,color,direction){
 function buildWorld(){
  scene.add(new THREE.HemisphereLight(0x9eabc0,0x33261d,.48));
  scene.add(new THREE.AmbientLight(0xffffff,.10));
+ const moonLight=new THREE.DirectionalLight(0x9eabc0,quality==='low'?.28:.72);moonLight.position.set(-22,38,30);moonLight.castShadow=true;moonLight.shadow.mapSize.set(1024,1024);moonLight.shadow.camera.left=-58;moonLight.shadow.camera.right=58;moonLight.shadow.camera.top=68;moonLight.shadow.camera.bottom=-68;moonLight.shadow.camera.near=.1;moonLight.shadow.camera.far=130;moonLight.shadow.bias=-.00035;moonLight.shadow.normalBias=.025;scene.add(moonLight);scene.add(moonLight.target);
  // Dukkan zemini ve duvarlari
  const floor=texturedMaterial(0x918778,'tile',7,8),wall=mat(0xc7b99f),green=mat(0x35463f),wood=mat(0x624832),steel=mat(0x89969a,.32,.4);
  addBox(scene,'shop floor',0,-.14,0,12,.28,14,floor);
@@ -256,6 +258,8 @@ function buildWorld(){
  for(let z=12;z<=104;z+=5)addBox(scene,'road centre dash',0,-.075,z,.15,.025,2.7,mat(0xe9dfbd,.72));
  for(const x of [-5.8,5.8])addBox(scene,'lane divider',x,-.077,56,.055,.018,102,mat(0x9ca0a0,.8));
  for(let i=0;i<11;i++)addBox(scene,'zebra crossing stripe',-9.5+i*1.9,-.074,12.1,1.08,.025,1.45,mat(0xf0eee5,.82));
+ const wetAsphalt=new THREE.MeshStandardMaterial({color:0x35414a,roughness:.24,metalness:.12,transparent:true,opacity:.5});
+ for(let i=0;i<22;i++){const radius=.22+Math.random()*.7,puddle=new THREE.Mesh(new THREE.CircleGeometry(radius,24),wetAsphalt);puddle.rotation.x=-Math.PI/2;puddle.scale.set(1.1,.55,1);puddle.position.set((Math.random()-.5)*19,-.068,15+Math.random()*87);puddle.receiveShadow=true;scene.add(puddle)}
  for(let z=15;z<=105;z+=20){makeStreetLamp(-15.3,z);makeStreetLamp(15.3,z)}
  const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE','MANAV','TEKEL','PASTANE','ÇİÇEKÇİ'];
  for(let i=0;i<9;i++){
