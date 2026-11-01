@@ -5,7 +5,16 @@ export function createProductModel(THREE, name, color) {
   const add=(geometry,mat,x,y,z,rx=0,ry=0,rz=0,sx=1,sy=1,sz=1)=>{
     const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(x,y,z);mesh.rotation.set(rx,ry,rz);mesh.scale.set(sx,sy,sz);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);return mesh;
   };
-  if(name==='Ekmek'){
+  if(name==='Ketçap'||name==='Mayonez'||name==='Hardal'){
+    const bottleColor=name==='Ketçap'?0xb82b22:name==='Mayonez'?0xe8dfc7:0xd6a21c;
+    const plastic=material(bottleColor,.28),cap=material(0x24282b,.34);
+    add(new THREE.CylinderGeometry(.115,.15,.42,24),plastic,0,.25,0,0,0,0,1,1,.88);
+    add(new THREE.CylinderGeometry(.065,.085,.13,20),plastic,0,.51,0);
+    add(new THREE.CylinderGeometry(.07,.07,.065,18),cap,0,.61,0);
+    add(new THREE.BoxGeometry(.19,.12,.012),material(0xf3ead7,.48),0,.28,.135);
+  } else if(name==='Doğranmış patates'){
+    for(let i=0;i<14;i++){const fry=new THREE.Mesh(new THREE.BoxGeometry(.055,.07,.16),i%3?main:light);fry.position.set((i%4)*.09-.14,.05+Math.floor(i/4)*.045,(Math.floor(i/4)%2)*.08-.06);fry.rotation.y=(i%5)*.2;fry.castShadow=true;root.add(fry)}
+  } else if(name==='Ekmek'){
     add(new THREE.SphereGeometry(.29,36,24),main,0,.035,0,0,0,0,1.48,.23,.9);
     add(new THREE.TorusGeometry(.265,.022,10,44),dark,0,.075,0,Math.PI/2,0,0,1.42,1,.84);
     const topGroup=new THREE.Group();topGroup.position.set(0,.075,-.29);root.add(topGroup);
