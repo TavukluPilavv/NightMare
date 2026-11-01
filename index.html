@@ -571,7 +571,7 @@ function updateMovement(dt){
  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
  const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
  const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.5);
- camera.position.x=THREE.MathUtils.clamp(camera.position.x,-24,24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,59);
+ const inBazaar=camera.position.z>10&&camera.position.z<59;camera.position.x=THREE.MathUtils.clamp(camera.position.x,inBazaar?-14.45:-24,inBazaar?14.45:24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,59);
  // On tezgahin icinden gecilmez; oyuncu iki yandan dolasip hazirlik alanina ulasir.
  if(camera.position.z<.35&&camera.position.z> -1.25&&Math.abs(camera.position.x)<3.35){camera.position.x=oldX;camera.position.z=oldZ}
  // Dukkan duvarlari: kapali giris ve arka cikis gecilemez; kapinin acilmasi gerekir.
