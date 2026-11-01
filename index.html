@@ -193,10 +193,10 @@ function buildWorld(){
  mainLamp=pointLight(0,3.8,-.2,0xffd18a,38,18);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,15,10);pointLight(3.4,3.1,-2.4,0x58cfff,4,7);
  for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,7,6)}
  // Malzeme istasyonlari: stok sinirsiz, her urun ayri alinabilir
- const stationData=[['Ekmek',-3.55,0xd9a75e],['Çiğ tavuk',-2.55,0xb95f3d],['Marul',-1.55,0x4c9c4d],['Soğan',-.55,0xe5d8c4],['Domates',.45,0xc83b32],['Patates',1.45,0xd5a64e],['Ketçap',2.45,0xc52e24],['Mayonez',3.45,0xe9dfc5],['Hardal',4.45,0xd7a52d]];
+ const stationData=[['Ekmek',-3.3,0xd9a75e],['Çiğ tavuk',-2.475,0xb95f3d],['Marul',-1.65,0x4c9c4d],['Soğan',-.825,0xe5d8c4],['Domates',0,0xc83b32],['Patates',.825,0xd5a64e],['Ketçap',1.65,0xc52e24],['Mayonez',2.475,0xe9dfc5],['Hardal',3.3,0xd7a52d]];
  for(const [name,x,color] of stationData){
   const root=new THREE.Group();root.position.set(x,1.38,-4.48);
-  addBox(root,'ingredient tray',0,0,0,1.08,.1,.82,mat(0x3b4142,.55,.25));
+  addBox(root,'ingredient tray',0,0,0,.76,.1,.72,mat(0x3b4142,.55,.25));
   const model=['Ketçap','Mayonez','Hardal'].includes(name)?createSauceBottle(THREE,color):createProductModel(THREE,name,color);model.position.set(0,.18,0);root.add(model);
   root.userData.itemName=name;register(root,name,'ingredient');
  }
@@ -372,7 +372,7 @@ function powerOut(){
  if(blackoutActive)return;blackoutActive=true;mainLamp.intensity=0;prepLamp.intensity=0;emergencyLamp.intensity=8;flashlight.intensity=27;$('blackout').style.opacity='.34';spawnBlackoutFigure();playPowerCut();toast('ELEKTRİKLER KESİLDİ! Önünde bir siluet belirdi…');objective('ÖNÜNDEKİ SİLUETE DİKKAT ET. Sonra arka çıkıştan şalteri bul.');
 }
 function restorePower(){
- if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=62;prepLamp.intensity=24;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Arka odadaki patron telefonu çalıyor…')}
+ if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=38;prepLamp.intensity=15;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Arka odadaki patron telefonu çalıyor…')}
 }
 function interact(target){
  if(!target)return;const name=target.userData.name,type=target.userData.type;
@@ -439,7 +439,7 @@ function animate(){
   elapsed+=dt;updateMovement(dt);
   if(!shiftStarted&&!shiftClosing&&camera.position.z<5.3){shiftStarted=true;shiftStartElapsed=elapsed;nextPhoneAt=elapsed+14;objective('Vardiyan başladı. Telefonun çalmasını bekle.');toast('Dükkâna girdin. Gece vardiyası başladı.');}
   if(shiftStarted){
-   if(elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
+   if(!shiftClosing&&elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
    if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
    if(shiftStarted&&!shiftClosing&&elapsed-shiftStartElapsed>=180){beginClosingShift()}
    if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*.72);customer.userData.animate?.(elapsed,true)}else if(customer){customer.userData.animate?.(elapsed,false)}
