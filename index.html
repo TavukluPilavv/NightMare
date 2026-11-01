@@ -71,7 +71,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;tou
 <div class="modal hide" id="settingsModal"><div class="panel">
  <h1>⚙ AYARLAR</h1><label>Oyuncu adı</label><input id="playerName" maxlength="18" placeholder="Oyuncu">
  <p>Joystick boyutu</p><input id="joySize" type="range" min="100" max="160" value="126">
- <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select><p>FPS sınırı</p><select id="fpsCap" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="30">30 FPS</option><option value="40">40 FPS</option><option value="60" selected>60 FPS</option></select>
+ <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select><p>FPS sınırı</p><select id="fpsCap" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="30">30 FPS</option><option value="40">40 FPS</option><option value="60" selected>60 FPS</option><option value="90">90 FPS</option></select>
  <button id="saveSettings" style="margin-top:14px">KAYDET</button><button id="closeSettings" style="margin-top:8px;background:#465463">KAPAT</button>
 </div></div>
 <div class="modal hide" id="scare"><div class="panel"><h1>ARKANDA!</h1><p>Bir anlığına ışıklar söndü. Az önce gördüğün şey hâlâ burada mı?</p><button id="continueScare">DEVAM ET</button></div></div>
@@ -133,7 +133,7 @@ function loadProgress(){
   fryerUnlocked=!!saved.fryerUnlocked;
   ringsUnlocked=!!saved.ringsUnlocked&&fryerUnlocked;
   if(['low','medium','high'].includes(saved.quality))quality=saved.quality;
-  if([30,40,60].includes(Number(saved.targetFPS)))targetFPS=Number(saved.targetFPS);
+  if([30,40,60,90].includes(Number(saved.targetFPS)))targetFPS=Number(saved.targetFPS);
  }catch(error){console.warn('Kayıt dosyası okunamadı:',error)}
 }
 function saveProgress(){
@@ -190,17 +190,35 @@ function makeStreetLamp(x,z){
  streetLights.push({lamp,glow});
 }
 function makePedestrian(x,z,color,variant){
- const g=createHumanCustomer(THREE,{variant:variant||0,role:'pedestrian'});g.scale.set(.94,1.08,.94);g.position.set(x,0,z);g.userData.walkDirection=x<0?1:-1;g.userData.baseYaw=g.userData.walkDirection>0?-Math.PI/2:Math.PI/2;g.rotation.y=g.userData.baseYaw;scene.add(g);walkers.push(g);
+ const g=createHumanCustomer(THREE,{variant:variant||0,role:'pedestrian'});
+ g.scale.set(.96,1.08,.96);g.position.set(x,0,z);
+ g.userData.walkDirection=(variant%2===0)?1:-1;g.userData.walkAxis='z';
+ g.userData.baseYaw=g.userData.walkDirection>0?Math.PI:0;g.rotation.y=g.userData.baseYaw;
+ scene.add(g);walkers.push(g);
 }
 function makeCar(x,z,color,direction){
- const g=new THREE.Group(),body=mat(color,.42,.18),glass=mat(0x52616b,.25,.2),rubber=mat(0x111315,.8);
- addBox(g,'car body',0,.58,0,2.35,.72,1.25,body);addBox(g,'car cabin',-.1,1.1,0,1.2,.55,1.02,body);
- addBox(g,'front windshield',.515,1.12,0,.035,.39,.88,glass);addBox(g,'rear windshield',-.715,1.12,0,.035,.36,.86,glass);
- for(const side of [-1,1]){addBox(g,'side window',-.1,1.13,side*.515,.82,.34,.035,glass);addBox(g,'door handle',-.18,.91,side*.64,.2,.035,.025,mat(0xc1c6c8,.3,.7));}
- addBox(g,'front bumper',1.18,.34,0,.12,.18,1.28,mat(0x9ba2a5,.38,.65));addBox(g,'rear bumper',-1.18,.34,0,.12,.16,1.28,mat(0x9ba2a5,.38,.65));addBox(g,'front grille',1.19,.57,0,.025,.22,.42,mat(0x15191d,.65,.2));
- for(const a of [-.76,.76])for(const b of [-.52,.52]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.16,16),rubber);w.rotation.z=Math.PI/2;w.position.set(a,.28,b);g.add(w);const hub=new THREE.Mesh(new THREE.CylinderGeometry(.105,.105,.17,16),mat(0x9ba2a5,.3,.72));hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub)}
- for(const b of [-.4,.4]){addBox(g,'headlight',1.19,.62,b,.035,.16,.22,mat(0xffe6b6,.25));addBox(g,'tail light',-1.2,.62,b,.035,.17,.2,mat(0xa32925,.35));}
- g.position.set(x,0,z);g.userData.direction=direction;g.userData.wheels=[];for(const wheel of g.children){if(wheel.geometry?.type==='CylinderGeometry'&&wheel.position.y<.4)g.userData.wheels.push(wheel)}scene.add(g);cars.push(g);
+ const g=new THREE.Group(),body=mat(color,.34,.24),glass=new THREE.MeshPhysicalMaterial({color:0x52616b,roughness:.18,metalness:.12,clearcoat:.8}),rubber=mat(0x111315,.9),chrome=mat(0x9ba2a5,.28,.78);
+ addBox(g,'car lower chassis',0,.42,0,2.42,.38,1.28,mat(0x252a2d,.72,.25));
+ addBox(g,'car body',0,.66,0,2.55,.62,1.34,body);addBox(g,'car bonnet',.78,.91,0,.82,.12,1.25,body);
+ addBox(g,'car cabin',-.12,1.13,0,1.28,.58,1.08,body);
+ addBox(g,'front windshield',.54,1.16,0,.045,.42,.94,glass);addBox(g,'rear windshield',-.78,1.15,0,.045,.4,.92,glass);
+ for(const side of [-1,1]){
+  addBox(g,'side window front',.2,1.16,side*.55,.55,.34,.035,glass);addBox(g,'side window rear',-.43,1.16,side*.55,.48,.34,.035,glass);
+  addBox(g,'side mirror',.48,1.22,side*.72,.22,.12,.16,body);addBox(g,'door handle',-.18,.91,side*.68,.2,.035,.025,chrome);
+  addBox(g,'door seam',-.12,.72,side*.674,.012,.42,.012,mat(0x25282a,.7));
+ }
+ addBox(g,'front bumper',1.29,.38,0,.14,.2,1.38,chrome);addBox(g,'rear bumper',-1.29,.38,0,.14,.2,1.38,chrome);addBox(g,'front grille',1.305,.67,0,.025,.22,.48,mat(0x15191d,.65,.2));
+ const headlamp=new THREE.MeshStandardMaterial({color:0xffedc5,emissive:0xffc66d,emissiveIntensity:1.35,roughness:.24});
+ const tailLamp=new THREE.MeshStandardMaterial({color:0xa32925,emissive:0x8c100b,emissiveIntensity:.75,roughness:.3});
+ for(const side of [-.48,.48]){addBox(g,'headlight',1.305,.76,side,.04,.19,.25,headlamp);addBox(g,'tail light',-1.31,.72,side,.04,.2,.23,tailLamp)}
+ for(const a of [-.78,.78])for(const b of [-.56,.56]){
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.18,24),rubber);w.rotation.z=Math.PI/2;w.position.set(a,.31,b);w.castShadow=true;g.add(w);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.19,20),chrome);hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub);
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.2,16),mat(0x30383c,.28,.7));cap.rotation.z=Math.PI/2;cap.position.copy(w.position);g.add(cap);
+ }
+ g.position.set(x,0,z);g.rotation.y=direction>0?-Math.PI/2:Math.PI/2;g.userData.direction=direction;
+ g.userData.wheels=[];for(const wheel of g.children){if(wheel.geometry?.type==='CylinderGeometry'&&wheel.position.y<.4)g.userData.wheels.push(wheel)}
+ scene.add(g);cars.push(g);
 }
 function buildWorld(){
  scene.add(new THREE.HemisphereLight(0x9eabc0,0x33261d,.48));
@@ -219,31 +237,45 @@ function buildWorld(){
  const glass=new THREE.MeshPhysicalMaterial({color:0x9bb8c8,roughness:.12,metalness:.12,transparent:true,opacity:.34,transmission:.72,thickness:.12,ior:1.45,clearcoat:.9,clearcoatRoughness:.08});
  addBox(scene,'left window frame',-4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'left window glass',-4.85,2.15,5.58,1.3,1.5,.045,glass);
  addBox(scene,'right window frame',4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'right window glass',4.85,2.15,5.58,1.3,1.5,.045,glass);
- // Dis mekan: kaldirim, asfalt ve isikli cadde
- addBox(scene,'front walkway',0,-.2,10.8,28,.22,10,texturedMaterial(0x77766f,'tile',12,5));
- addBox(scene,'sidewalk',0,-.2,16.5,34,.22,3.5,texturedMaterial(0x77766f,'tile',16,2));
- addBox(scene,'road',0,-.29,23,54,.18,14,texturedMaterial(0x242b32,'asphalt',18,6));
- addBox(scene,'far sidewalk',0,-.2,31,34,.22,3.5,texturedMaterial(0x77766f,'tile',16,2));
- for(let x=-24;x<=24;x+=5)addBox(scene,'road centre dash',x,-.185,23,2.6,.018,.12,mat(0xe4d5a1));for(const z of [16.2,29.8])addBox(scene,'road edge line',0,-.184,z,50,.018,.09,mat(0xbab6a8));
- addBox(scene,'left curb',-17,-.04,23,.2,.25,17,mat(0xbdb7aa));addBox(scene,'right curb',17,-.04,23,.2,.25,17,mat(0xbdb7aa));
- for(const z of [10,22,34]){makeStreetLamp(-14.5,z);makeStreetLamp(14.5,z)}
- for(const [i,z] of [13,23,33].entries()){
-  addBox(scene,'left street building',-20,2.2,z,4,4.4,5,mat(0x303e4a));
-  addBox(scene,'right street building',20,2.2,z,4,4.4,5,mat(0x35424b));
+ // Genis carsi: tek parca asfalt, iki kaldirim ve uzunlamasina trafik koridoru.
+ addBox(scene,'front plaza',0,-.2,8.8,34,.22,10.5,texturedMaterial(0x858078,'tile',15,5));
+ const asphalt=texturedMaterial(0x252b31,'asphalt',7,25);asphalt.roughness=.98;
+ addBox(scene,'continuous bazaar road',0,-.29,34,17,.18,50,asphalt);
+ for(const side of [-1,1]){
+  addBox(scene,side<0?'left bazaar sidewalk':'right bazaar sidewalk',side*11.1,-.2,34,4.8,.22,50,texturedMaterial(0x85827a,'tile',4,24));
+  addBox(scene,side<0?'left raised curb':'right raised curb',side*8.68,-.085,34,.28,.23,50,mat(0xc4beb2,.88));
+  addBox(scene,side<0?'left shop walkway':'right shop walkway',side*14.15,-.2,34,1.25,.22,50,texturedMaterial(0x77766f,'tile',2,24));
+  addBox(scene,side<0?'left road edge':'right road edge',side*8.18,-.185,34,.07,.02,49,mat(0xe5dfcf,.8));
+ }
+ for(let z=13;z<=56;z+=5)addBox(scene,'road centre dash',0,-.185,z,.13,.02,2.55,mat(0xe9dfbd,.72));
+ for(const x of [-4.1,4.1])addBox(scene,'lane divider',x,-.187,34,.055,.018,48,mat(0x9ca0a0,.8));
+ for(let i=0;i<11;i++)addBox(scene,'zebra crossing stripe',-7.2+i*1.44,-.184,12.1,.82,.025,1.25,mat(0xf0eee5,.82));
+ for(const z of [15,25,35,45,55]){makeStreetLamp(-11.5,z);makeStreetLamp(11.5,z)}
+ const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE'];
+ for(let i=0;i<5;i++){
+  const z=16+i*9;
   for(const side of [-1,1]){
-   const cx=side*20,front=z+2.53,frame=mat(0x252c31,.42,.3),doorMat=mat(i===1?0x69432e:0x465b63,.48);
-   addBox(scene,'shop window frame',cx,1.82,front,1.42,1.15,.14,frame);
-   addBox(scene,'shop window glass',cx,1.82,front+.08,1.18,.91,.035,glass);
-   addBox(scene,'shop entrance door',cx-side*.92,1.13,front,.72,2.25,.16,doorMat);
-   addBox(scene,'shop door glass',cx-side*.92,1.48,front+.09,.49,1.18,.025,glass);
-   addBox(scene,'shop awning',cx,2.55,front+.28,1.65,.16,.68,mat(i===1?0x9b4c35:0x536d75,.65));
-   addBox(scene,'shop sign',cx,3.45,front+.04,2.35,.52,.16,mat(0x17232a,.42,.25));
-   addLabel(side<0?(i===0?'MARKET':i===1?'KAFE':'BÜFE'):(i===0?'KASAP':i===1?'FIRIN':'MARKET'),cx,3.46,front+.14,2.2,.42);
-   
+   const cx=side*19.25,frontX=side*14.9,wallMat=mat(i%2?0x39454b:0x303e49,.88),frame=mat(0x252d33,.4,.38);
+   addBox(scene,'bazaar shop shell',cx,2.45,z,8.7,4.9,8.35,wallMat);
+   addBox(scene,'shop front fascia',frontX-side*.045,3.95,z,.16,.72,8.1,mat(0x202b32,.55,.22));
+   for(const offset of [-2.35,2.35]){
+    addBox(scene,'shop window frame',frontX-side*.12,1.95,z+offset,.18,1.55,1.8,frame);
+    addBox(scene,'shop window glass',frontX-side*.22,1.95,z+offset,.035,1.3,1.55,glass);
+    addBox(scene,'window display sill',frontX-side*.23,1.15,z+offset,.22,.12,1.9,mat(0x6d6558,.55,.18));
+   }
+   addBox(scene,'shop entrance door',frontX-side*.14,1.22,z,.2,2.35,1.15,mat(i===1?0x69432e:0x465b63,.42));
+   addBox(scene,'shop door glass',frontX-side*.26,1.52,z,.035,1.35,.82,glass);
+   addBox(scene,'shop awning',frontX-side*.38,2.82,z,.72,.18,7.8,mat(i%2?0x9b4c35:0x536d75,.62));
+   addBox(scene,'shop sign',frontX-side*.18,4.0,z,.2,.62,3.6,mat(0x17232a,.4,.25));
+   const sign=addLabel(side<0?shopNames[i]:shopNames[(i+2)%shopNames.length],frontX-side*.3,4.0,z,3.35,.48);
+   sign.rotation.y=side<0?Math.PI/2:-Math.PI/2;
+   pointLight(frontX-side*.9,2.65,z,0xffc77b,quality==='low'?1.5:3.2,7);
   }
  }
- makePedestrian(-10.5,12,0x315c84,1);makePedestrian(10.5,20,0x78523c,3);makePedestrian(-10.5,30,0x526c4b,5);if(quality!=='low'){makePedestrian(10.5,15,0x7b536d,2);makePedestrian(-10.5,26,0x8b7651,4);makePedestrian(10.5,34,0x526a78,6)}
- makeCar(-27,19,0x9b3430,1);makeCar(27,23,0x315a86,-1);makeCar(-27,27,0x777777,1);if(quality!=='low'){makeCar(27,17,0x3d6950,-1);makeCar(-27,31,0x9a7a38,1)}
+ const crowd=[[-11.2,17,1],[-11.2,24,3],[-11.2,34,5],[-11.2,45,7],[11.2,20,2],[11.2,29,4],[11.2,40,6],[11.2,52,0]];
+ for(let i=0;i<(quality==='low'?4:quality==='medium'?6:8);i++){const [x,z,v]=crowd[i];makePedestrian(x,z,0x315c84,v)}
+ makeCar(-3.05,15,0x9b3430,1);makeCar(3.05,22,0x315a86,-1);makeCar(-3.05,32,0x777777,1);
+ if(quality!=='low'){makeCar(3.05,43,0x3d6950,-1);makeCar(-3.05,53,0x9a7a38,1)}
  // Tezgah ve arka hazirlik alani
  addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
  addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
@@ -524,7 +556,7 @@ function updateMovement(dt){
  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
  const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
  const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.5);
- camera.position.x=THREE.MathUtils.clamp(camera.position.x,-24,24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,37);
+ camera.position.x=THREE.MathUtils.clamp(camera.position.x,-24,24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,59);
  // On tezgahin icinden gecilmez; oyuncu iki yandan dolasip hazirlik alanina ulasir.
  if(camera.position.z<.35&&camera.position.z> -1.25&&Math.abs(camera.position.x)<3.35){camera.position.x=oldX;camera.position.z=oldZ}
  // Dukkan duvarlari: kapali giris ve arka cikis gecilemez; kapinin acilmasi gerekir.
@@ -559,7 +591,21 @@ function animate(now=0){
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
   }
-  if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*7.0;for(const wheel of car.userData.wheels||[])wheel.rotation.x+=dt*car.userData.direction*7/.23;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*1.05;if(person.position.x>12||person.position.x< -12){person.userData.walkDirection*=-1;person.userData.baseYaw=person.userData.walkDirection>0?-Math.PI/2:Math.PI/2;person.rotation.y=person.userData.baseYaw}person.userData.animate?.(elapsed,true,dt)}}
+  if(started&&camera.position.z>6){
+  for(const car of cars){
+   car.position.z+=car.userData.direction*dt*7.0;
+   for(const wheel of car.userData.wheels||[])wheel.rotation.x+=dt*car.userData.direction*7/.25;
+   if(car.userData.direction>0&&car.position.z>59)car.position.z=10;
+   if(car.userData.direction<0&&car.position.z<10)car.position.z=59;
+  }
+  for(const person of walkers){
+   person.position.z+=person.userData.walkDirection*dt*.9;
+   if(person.position.z>58||person.position.z<12){
+    person.userData.walkDirection*=-1;person.userData.baseYaw=person.userData.walkDirection>0?Math.PI:0;person.rotation.y=person.userData.baseYaw;
+   }
+   person.userData.animate?.(elapsed,true,dt);
+  }
+ }
   if(apparition){apparitionTimer-=dt;apparition.userData.animate?.(elapsed,false,dt);if(apparitionTimer<=0)removeBlackoutFigure();if(apparitionTimer>0&&camera.position.distanceTo(apparition.position)<1.9&&scareCooldown<=0&&Math.random()<.0007)jumpscare('Karanlıktaki siluet bir anda yüzüne doğru atıldı!')}
   if(blackoutActive&&Math.random()<.025){mainLamp.intensity=Math.random()*2}
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
@@ -600,7 +646,14 @@ function setupControls(){
  const lookEnd=e=>{if(e.pointerId===lookId)lookId=null};look.addEventListener('pointerup',lookEnd);look.addEventListener('pointercancel',lookEnd);
  addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='w'||k==='arrowup')moveY=1;if(k==='s'||k==='arrowdown')moveY=-1;if(k==='a'||k==='arrowleft')moveX=-1;if(k==='d'||k==='arrowright')moveX=1;if(k==='e'||k===' ')rayInteract()});
  addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(['w','s','arrowup','arrowdown'].includes(k))moveY=0;if(['a','d','arrowleft','arrowright'].includes(k))moveX=0});
- renderer.domElement.addEventListener('click',()=>{if(started&&innerWidth>900&&!document.pointerLockElement)renderer.domElement.requestPointerLock?.()});
+ const isAndroidOrTouch=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||matchMedia('(pointer: coarse)').matches;
+ if(!isAndroidOrTouch&&matchMedia('(hover: hover) and (pointer: fine)').matches){
+  renderer.domElement.addEventListener('click',()=>{
+   if(!started||document.pointerLockElement||typeof renderer.domElement.requestPointerLock!=='function')return;
+   try{const lockResult=renderer.domElement.requestPointerLock();if(lockResult&&typeof lockResult.catch==='function')lockResult.catch(error=>console.warn('Fare kilidi desteklenmiyor:',error))}
+   catch(error){console.warn('Fare kilidi açılamadı:',error)}
+  });
+ }
  document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0022;pitch=THREE.MathUtils.clamp(pitch-e.movementY*.0022,-1.15,1.15);updateLook()}});
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();applyQuality()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)clock.getDelta()});
