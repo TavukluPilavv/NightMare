@@ -19,17 +19,18 @@ export function createProductModel(THREE, name, color) {
     if(name==='Pişmiş tavuk'){for(let i=0;i<7;i++)add(new THREE.BoxGeometry(.018,.014,.12),material(0x493021),-.2+i*.065,.14,Math.sin(i)*.12,0,0,(i-3)*.035);for(let i=0;i<5;i++)add(new THREE.SphereGeometry(.018,8,6),material(0x5b9b43),-.18+i*.09,.15,.18)}
 
   } else if(name==='Marul'){
-    for(let i=0;i<8;i++){const a=i*Math.PI*2/8;add(new THREE.SphereGeometry(.16,16,12),i%2?main:light,Math.cos(a)*.12,.08,Math.sin(a)*.12,0,0,a*.3,1.2,.32,.78)}
-    add(new THREE.CylinderGeometry(.025,.035,.16,8),material(0xe9e1c6),0,.05,0);
+    for(let i=0;i<12;i++){const a=i*Math.PI*2/12,leaf=new THREE.Mesh(new THREE.SphereGeometry(.17,20,14),i%3?main:light);leaf.position.set(Math.cos(a)*.105,.065+(i%3)*.018,Math.sin(a)*.105);leaf.scale.set(1.15,.22,.72);leaf.rotation.y=-a;leaf.rotation.z=Math.sin(a)*.18;leaf.castShadow=true;root.add(leaf)}
+    add(new THREE.CylinderGeometry(.035,.055,.18,12),material(0xe9e1c6),0,.045,0);
+    for(let i=0;i<7;i++)add(new THREE.BoxGeometry(.012,.008,.22),material(0x8acb68),Math.cos(i)*.05,.105,Math.sin(i)*.05,0,i*.45,0);
   } else if(name==='Soğan'){
-    for(let i=0;i<5;i++)add(new THREE.TorusGeometry(.15-i*.018,.025,10,24),i%2?main:light,(i-2)*.065,.07,0,Math.PI/2,0,0,1,1,.75);
-    add(new THREE.SphereGeometry(.055,14,10),light,0,.05,0,0,0,0,1,.6,1);
+    for(let layer=0;layer<4;layer++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.16-layer*.022,.018,12,36),layer%2?light:main);ring.position.set((layer-1.5)*.045,.075,0);ring.rotation.x=Math.PI/2;ring.rotation.z=layer*.12;ring.scale.set(1,.82,1);ring.castShadow=true;root.add(ring)}
+    add(new THREE.SphereGeometry(.045,16,12),light,0,.05,0,0,0,0,1,.65,1);
   } else if(name==='Domates'){
-    for(let i=0;i<4;i++){const a=i*Math.PI/2;add(new THREE.SphereGeometry(.13,18,14),i%2?light:main,Math.cos(a)*.12,.1,Math.sin(a)*.12,0,0,0,1,.9,1)}
-    add(new THREE.ConeGeometry(.035,.08,5),material(0x3d7835),0,.24,0);
+    const sliceMat=material(0xd84a37,.48),skinMat=material(0xa92e25,.55),seedMat=material(0xf3d7a2,.62);
+    for(let i=0;i<3;i++){const slice=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.045,32),sliceMat);slice.position.set((i-1)*.13,.075+(i%2)*.025,0);slice.rotation.x=Math.PI/2;slice.castShadow=true;root.add(slice);const skin=new THREE.Mesh(new THREE.TorusGeometry(.15,.012,8,32),skinMat);skin.position.copy(slice.position);skin.rotation.copy(slice.rotation);root.add(skin);for(let j=0;j<6;j++){const seed=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),seedMat);seed.position.set(slice.position.x+Math.cos(j*Math.PI/3)*.075,.10+(i%2)*.025,Math.sin(j*Math.PI/3)*.075);root.add(seed)}}
   } else if(name==='Patates'){
-    const potato=material(0xe9cc91,.8),skin=material(0xc69b5d,.9);
-    for(let i=0;i<9;i++){const a=(i-4)*.11;add(new THREE.BoxGeometry(.075,.075,.42),i%2?potato:skin,a,.045,(i%3-1)*.12,0,0,a*.25)}
+    const skin=material(0xb88a50,.92),eye=material(0x725033,.98);
+    for(let i=0;i<3;i++){const tuber=new THREE.Mesh(new THREE.SphereGeometry(.17,24,18),i%2?main:skin);tuber.position.set((i-1)*.18,.08,Math.sin(i*2)*.08);tuber.scale.set(1.35,.72,.82);tuber.rotation.z=(i-1)*.2;tuber.castShadow=true;tuber.receiveShadow=true;root.add(tuber);for(let j=0;j<4;j++){const spot=new THREE.Mesh(new THREE.SphereGeometry(.012,7,5),eye);spot.position.set(tuber.position.x+Math.sin(j*3.2)*.13,.08+Math.cos(j*2.4)*.055,tuber.position.z+Math.cos(j*3.2)*.09);root.add(spot)}}
   } else if(name==='Patates kızartması'){
     add(new THREE.BoxGeometry(.48,.24,.32),material(0xc64c2e),0,.02,0);
     for(let i=0;i<10;i++){const f=new THREE.Mesh(new THREE.BoxGeometry(.055,.38,.055),i%2?light:main);f.position.set((i%4)*.09-.14,.27,Math.floor(i/4)*.08-.08);f.rotation.z=(i%3-1)*.1;f.castShadow=true;root.add(f)}
