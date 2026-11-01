@@ -418,12 +418,12 @@ function beginClosingShift(){
  toast('Gün bitti. Patron arıyor…');objective('Arka odaya git ve patronun telefonunu aç.');playWhisper();
 }
 function startNextDay(){
- day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;backRoomDoorOpen=false;bathroomDoorOpen=false;frontDoor.rotation.y=0;backDoor.rotation.y=0;backRoomDoor.rotation.y=0;bathroomDoor.rotation.y=0;patrolCallDone=false;currentOrder=null;
+ day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;backRoomDoorOpen=false;bathroomDoorOpen=false;customerLeaving=false;courierLeaving=false;blackoutActive=false;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';removeBlackoutFigure();grillCooking=false;fryerCooking=false;cookTimer=0;cookingOutput='';frontDoor.rotation.y=0;backDoor.rotation.y=0;backRoomDoor.rotation.y=0;bathroomDoor.rotation.y=0;patrolCallDone=false;currentOrder=null;
  stains.forEach(d=>d.visible=false);hasMop=false;mopGroup.visible=true;patrolRinging=false;phoneRinging=false;stopPhoneRing();
  openSign.userData.signCtx.fillStyle='#1d5c38';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('AÇIK',256,92);openSign.userData.signTexture.needsUpdate=true;
  mainLamp.intensity=38;prepLamp.intensity=15;streetLights.forEach(({lamp})=>lamp.intensity=38);
  camera.position.set(0,2.05,34);yaw=0;pitch=0;updateLook();removeCustomer();clearBoard();clearHeld();updateOrderHud();
- shiftStartElapsed=elapsed;nextPhoneAt=elapsed+18;nextPowerAt=elapsed+72;objective('GÜN '+day+': Çarşıdan dükkâna git ve kapıyı aç.');toast('Yeni gün başladı. Çarşı yeniden hareketleniyor.');playDoorBell();
+ shiftStartElapsed=elapsed;nextPhoneAt=elapsed+18;nextPowerAt=elapsed+72;removeCourier();removeCustomer();objective('GÜN '+day+': Çarşıdan dükkâna git ve kapıyı aç.');toast('Yeni gün başladı. Çarşı yeniden hareketleniyor.');playDoorBell();
 }
 function jumpscare(message){
  if(scareActive||scareCooldown>0)return;scareActive=true;scareCooldown=35;$('scare').classList.remove('hide');$('scare').querySelector('p').textContent=message||'Karanlığın içinden biri sana çok yaklaştı.';playScare();moveX=moveY=0;
