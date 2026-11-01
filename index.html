@@ -346,6 +346,7 @@ function buildWorld(){
   const x=-4.5+i*3,porcelain=mat(0xf0eee7,.26),seatMat=mat(0xd5d2ca,.32),chrome=mat(0x9da5a8,.2,.78);
   addBox(scene,'toilet stall divider',x+1.15,1.35,-19.2,.09,2.7,2.3,mat(0x9c9a91));
   const stall=createDoor('Tuvalet kabini '+(i+1),x,-18.05,1.0);stall.position.x=x-.5;
+  const stallHandle=new THREE.Mesh(new THREE.SphereGeometry(.045,12,8),chrome);stallHandle.position.set(.8,1.35,.12);stall.add(stallHandle);const stallLock=new THREE.Mesh(new THREE.BoxGeometry(.12,.16,.035),chrome);stallLock.position.set(.78,1.12,.105);stall.add(stallLock);
   // klozet: ayak, oval hazne, oturak, kapak ve rezervuar
   const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(.19,.25,.38,24),porcelain);pedestal.position.set(x+.5,.2,-20.48);scene.add(pedestal);
   const bowlBody=new THREE.Mesh(new THREE.SphereGeometry(.34,28,18),porcelain);bowlBody.scale.set(1,.62,1.16);bowlBody.position.set(x+.5,.42,-20.55);scene.add(bowlBody);
@@ -353,6 +354,12 @@ function buildWorld(){
   const seat=new THREE.Mesh(new THREE.TorusGeometry(.245,.035,10,36),seatMat);seat.scale.set(1,1.16,1);seat.position.set(x+.5,.64,-20.55);seat.rotation.x=Math.PI/2;scene.add(seat);
   const lid=new THREE.Mesh(new THREE.BoxGeometry(.46,.035,.57),porcelain);lid.position.set(x+.5,.68,-20.82);lid.rotation.x=-.12;scene.add(lid);
   const tank=addBox(scene,'toilet cistern',x+.5,.83,-21.05,.52,.78,.24,porcelain);
+  addBox(scene,'cistern lid',x+.5,1.235,-21.05,.56,.06,.28,seatMat);
+  const flushButton=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.025,16),chrome);flushButton.position.set(x+.5,1.275,-21.05);scene.add(flushButton);
+  const flushPipeCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(x+.5,.48,-21.05),new THREE.Vector3(x+.5,.29,-21.02),new THREE.Vector3(x+.5,.25,-20.82),new THREE.Vector3(x+.5,.31,-20.68)]);
+  const flushPipe=new THREE.Mesh(new THREE.TubeGeometry(flushPipeCurve,18,.032,8,false),porcelain);flushPipe.castShadow=true;scene.add(flushPipe);
+  const hingeLeft=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.07,10),chrome);hingeLeft.position.set(x+.34,.68,-20.78);scene.add(hingeLeft);
+  const hingeRight=hingeLeft.clone();hingeRight.position.x=x+.66;scene.add(hingeRight);
   addBox(scene,'toilet paper holder',x+1.03,.76,-20.52,.1,.1,.34,chrome);
   const paperRoll=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.25,20),mat(0xf4f1e9,.95));paperRoll.rotation.x=Math.PI/2;paperRoll.position.set(x+1.03,.78,-20.52);scene.add(paperRoll);
   const brushCup=new THREE.Mesh(new THREE.CylinderGeometry(.09,.105,.28,16),mat(0xe8e5dd,.35));brushCup.position.set(x-.2,.14,-20.95);scene.add(brushCup);
