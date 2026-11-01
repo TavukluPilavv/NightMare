@@ -38,7 +38,14 @@ export function createHumanCustomer(THREE, options = {}) {
     const leg=add(new THREE.CapsuleGeometry(.085,.43,5,10),pants,x,.39,0);legs.push(leg);
     const foot=add(new THREE.BoxGeometry(.19,.12,.32),shoe,x,.075,-.045);foot.rotation.y=x*.2;
   }
-  if(role==="courier"){add(new THREE.BoxGeometry(.52,.62,.22),mat(0xb74627),0,1.08,.28)}
+  if(role==="courier"){
+    add(new THREE.BoxGeometry(.52,.62,.22),mat(0xb74627),0,1.08,.28);
+    const helmet=mat(0xe7b52d,.3,.25),visor=mat(0x26333c,.22,.35),strap=mat(0x22262b,.5);
+    const shell=add(new THREE.SphereGeometry(.29,24,16,0,Math.PI*2,0,Math.PI*.58),helmet,0,.17,0);shell.scale.set(1.08,.78,1.12);head.add(shell);
+    const brim=add(new THREE.TorusGeometry(.235,.025,8,28),helmet,0,.075,-.015);brim.scale.set(1.12,.85,1);head.add(brim);
+    const faceShield=add(new THREE.BoxGeometry(.37,.09,.035),visor,0,.035,-.245);head.add(faceShield);
+    const chin=add(new THREE.CapsuleGeometry(.012,.28,3,8),strap,0,-.17,-.05);chin.rotation.z=Math.PI/2;head.add(chin);
+  }
   group.userData={strange,variant,role,arms,legs,hands,head,eyes,lids,brows,mouth,walkPhase:Math.random()*6,blinkAt:1.5+Math.random()*3,blink:0,expression:0};
   group.userData.setExpression=(kind="neutral")=>{
     const angry=kind==="angry"||strange,smile=kind==="happy";
