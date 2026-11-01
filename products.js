@@ -20,7 +20,7 @@ export function createProductModel(THREE, name, color) {
   } else if(name==='Soğan'){
     for(let i=0;i<5;i++)add(new THREE.TorusGeometry(.15-i*.018,.025,10,24),i%2?main:light,(i-2)*.065,.07,0,Math.PI/2,0,0,1,1,.75);
     add(new THREE.SphereGeometry(.055,14,10),light,0,.05,0,0,0,0,1,.6,1);
-  } else if(name==='Çiğ patates'){
+  } else if(name==='Domates'){\n    for(let i=0;i<4;i++){const a=i*Math.PI/2;add(new THREE.SphereGeometry(.13,18,14),i%2?light:main,Math.cos(a)*.12,.1,Math.sin(a)*.12,0,0,0,1,.9,1);}\n    add(new THREE.ConeGeometry(.035,.08,5),material(0x3d7835),0,.24,0);\n  } else if(name==='Çiğ patates'){
     const potato=material(0xe9cc91,.8),skin=material(0xc69b5d,.9);
     for(let i=0;i<9;i++){const a=(i-4)*.11;add(new THREE.BoxGeometry(.075,.075,.42),i%2?potato:skin,a,.045,(i%3-1)*.12,0,0,a*.25);}
   }
