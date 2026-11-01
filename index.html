@@ -235,7 +235,7 @@ function updateHud(){
 }
 function updateTicket(){
  const canvas=orderTexture.image,ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f2e5c9';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#392819';ctx.textAlign='center';ctx.font='bold 42px sans-serif';ctx.fillText('MÜŞTERİ SİPARİŞİ',384,58);
- ctx.font='bold 30px sans-serif';if(currentOrder){const lines=[];for(let i=0;i<currentOrder.items.length;i+=2)lines.push(currentOrder.items.slice(i,i+2).join(' • '));lines.forEach((line,i)=>ctx.fillText(line,384,125+i*45));ctx.font='24px sans-serif';ctx.fillText('Eksikler: '+missingItems().join(', '),384,270)}else{ctx.font='28px sans-serif';ctx.fillText('Henüz sipariş yok',384,170)}
+ ctx.font='bold 28px sans-serif';if(currentOrder){const lines=[];for(let i=0;i<currentOrder.items.length;i+=2)lines.push(currentOrder.items.slice(i,i+2).join(' • '));lines.forEach((line,i)=>ctx.fillText(line,384,112+i*38));ctx.font='22px sans-serif';ctx.fillText('Eksikler: '+missingItems().join(', '),384,275)}else{ctx.font='28px sans-serif';ctx.fillText('Henüz sipariş yok',384,170)}
  orderTexture.needsUpdate=true;
 }
 function missingItems(){return currentOrder?currentOrder.items.filter(item=>!prepItems.includes(item)):[]}
@@ -280,7 +280,6 @@ function putHeldItem(){
  if(!heldItem){toast('Önce raftan bir ürün al.');return}
  if(heldItem==='Çiğ tavuk'){toast('Çiğ tavuğu önce mangalda pişir.');return}
  if(heldItem==='Patates'&&fryerUnlocked){toast('Patatesi kızartma makinesinde pişir.');return}
- if(heldItem==='Soğan'&&ringsUnlocked){toast('Soğan halkası için soğanı fritözde pişirebilirsin.');return}
  if(heldItem==='Ekmek'){
   if(breadOpen){toast('Ekmek zaten tahtada açık.');return}
   breadOpen=true;prepItems.push('Ekmek');const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));bread.position.set(0,.24,0);bread.scale.set(.95,.8,.95);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();clearHeld();toast('Ekmeği tahtaya koyup açtın.');updateOrderHud();return;
@@ -376,6 +375,8 @@ function updateMovement(dt){
  const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
  const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.0);
  camera.position.x=THREE.MathUtils.clamp(camera.position.x,-14,14);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-15.5,37);
+ // On tezgahin icinden gecilmez; oyuncu iki yandan dolasip hazirlik alanina ulasir.
+ if(camera.position.z<.35&&camera.position.z> -1.25&&Math.abs(camera.position.x)<3.35){camera.position.x=oldX;camera.position.z=oldZ}
  // Dukkan duvarlari: kapali giris ve arka cikis gecilemez; kapinin acilmasi gerekir.
  if(!doorOpen&&camera.position.z<6.55&&oldZ>=6.55&&Math.abs(camera.position.x)<2.7)camera.position.z=6.55;
  if(camera.position.z<6.55&&camera.position.z> -5.4&&Math.abs(camera.position.x)>5.45)camera.position.x=Math.sign(camera.position.x)*5.45;
