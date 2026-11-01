@@ -68,7 +68,7 @@ export function createHumanCustomer(THREE, options = {}) {
     arms[1].rotation.z=.12-Math.max(0,Math.sin(phase+Math.PI))*.12;
     legs[0].rotation.x=-swing*.82;legs[1].rotation.x=swing*.82;
     group.position.y=walking?Math.abs(Math.sin(phase*2))*.035:Math.sin(time*1.8+group.userData.walkPhase)*.008;torso.rotation.z=walking?Math.sin(phase)*.025:Math.sin(time*.7)*.008;neck.rotation.z=Math.sin(time*.9+variant)*.025;
-    group.rotation.y=Math.sin(time*1.1+variant)*.025;
+    group.rotation.y=(group.userData.baseYaw||0)+Math.sin(time*1.1+variant)*.025;
     head.rotation.y=Math.sin(time*.8+variant)*.06;
     group.userData.blinkAt-=dt;
     if(group.userData.blinkAt<=0){group.userData.blink=.16;group.userData.blinkAt=2.2+Math.random()*4}
