@@ -206,9 +206,23 @@ function buildWorld(){
  for(let x=-24;x<=24;x+=5)addBox(scene,'road centre dash',x,-.185,23,2.6,.018,.12,mat(0xe4d5a1));for(const z of [16.2,29.8])addBox(scene,'road edge line',0,-.184,z,50,.018,.09,mat(0xbab6a8));
  addBox(scene,'left curb',-17,-.04,23,.2,.25,17,mat(0xbdb7aa));addBox(scene,'right curb',17,-.04,23,.2,.25,17,mat(0xbdb7aa));
  for(const z of [10,22,34]){makeStreetLamp(-14.5,z);makeStreetLamp(14.5,z)}
- for(const z of [13,23,33]){addBox(scene,'left street building',-20,2.2,z,4,4.4,5,mat(0x303e4a));addBox(scene,'right street building',20,2.2,z,4,4.4,5,mat(0x35424b));addBox(scene,'left shop window',-20,1.8,z+2.53,1.1,.9,.06,glass);addBox(scene,'right shop window',20,1.8,z+2.53,1.1,.9,.06,glass)}
- makePedestrian(-10.5,12,0x315c84,1);makePedestrian(10.5,20,0x78523c,3);makePedestrian(-10.5,30,0x526c4b,5);
- makeCar(-27,19,0x9b3430,1);makeCar(27,23,0x315a86,-1);makeCar(-27,27,0x777777,1);
+ for(const [i,z] of [13,23,33].entries()){
+  addBox(scene,'left street building',-20,2.2,z,4,4.4,5,mat(0x303e4a));
+  addBox(scene,'right street building',20,2.2,z,4,4.4,5,mat(0x35424b));
+  for(const side of [-1,1]){
+   const cx=side*20,front=z+2.53,frame=mat(0x252c31,.42,.3),doorMat=mat(i===1?0x69432e:0x465b63,.48);
+   addBox(scene,'shop window frame',cx,1.82,front,1.42,1.15,.14,frame);
+   addBox(scene,'shop window glass',cx,1.82,front+.08,1.18,.91,.035,glass);
+   addBox(scene,'shop entrance door',cx-side*.92,1.13,front,.72,2.25,.16,doorMat);
+   addBox(scene,'shop door glass',cx-side*.92,1.48,front+.09,.49,1.18,.025,glass);
+   addBox(scene,'shop awning',cx,2.55,front+.28,1.65,.16,.68,mat(i===1?0x9b4c35:0x536d75,.65));
+   addBox(scene,'shop sign',cx,3.45,front+.04,2.35,.52,.16,mat(0x17232a,.42,.25));
+   addLabel(side<0?(i===0?'MARKET':i===1?'KAFE':'BÜFE'):(i===0?'KASAP':i===1?'FIRIN':'MARKET'),cx,3.46,front+.14,2.2,.42);
+   pointLight(cx,2.8,front+.55,0xffc77b,3.2,5);
+  }
+ }
+ makePedestrian(-10.5,12,0x315c84,1);makePedestrian(10.5,20,0x78523c,3);makePedestrian(-10.5,30,0x526c4b,5);makePedestrian(10.5,15,0x7b536d,2);makePedestrian(-10.5,26,0x8b7651,4);makePedestrian(10.5,34,0x526a78,6);
+ makeCar(-27,19,0x9b3430,1);makeCar(27,23,0x315a86,-1);makeCar(-27,27,0x777777,1);makeCar(27,17,0x3d6950,-1);makeCar(-27,31,0x9a7a38,1);
  // Tezgah ve arka hazirlik alani
  addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
  addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
