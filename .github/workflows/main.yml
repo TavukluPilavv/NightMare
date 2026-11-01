@@ -26,6 +26,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r'<script type="module">(.*?)</script>', html, re.S)
+          if len(scripts) != 1:
+              raise SystemExit(f"Expected one module script, found {len(scripts)}")
+          Path("/tmp/nightmare-index.mjs").write_text(scripts[0], encoding="utf-8")
+          for name in ("characters.js", "audio.js", "props.js", "products.js"):
+              Path("/tmp/" + name.replace(".js", ".mjs")).write_text(Path(name).read_text(encoding="utf-8"), encoding="utf-8")
+          PY
+          node --check /tmp/nightmare-index.mjs
+          node --check /tmp/characters.mjs
+          node --check /tmp/audio.mjs
+          node --check /tmp/props.mjs
+          node --check /tmp/products.mjs
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
