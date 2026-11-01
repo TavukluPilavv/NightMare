@@ -531,6 +531,15 @@ function animate(now=0){
  if(now-lastPerfCheck>2200&&frameSamples>30){const avg=frameTimeTotal/frameSamples;if(avg>27&&quality!=='low'){quality='low';$('quality').value='low';applyQuality();toast('Akıcılık için grafikler otomatik düşürüldü.')}lastPerfCheck=now;frameSamples=0;frameTimeTotal=0}
  frameSamples++;frameTimeTotal+=dt*1000;const renderInterval=1000/targetFPS;if(now-lastRenderAt>=renderInterval){if(lastRenderAt===0)lastRenderAt=now;else lastRenderAt+=renderInterval;if(now-lastRenderAt>renderInterval*2)lastRenderAt=now;renderer.render(scene,camera);fpsFrames++;if(now-fpsLastUpdate>=1000){measuredFPS=fpsFrames*1000/Math.max(1,now-fpsLastUpdate);fpsFrames=0;fpsLastUpdate=now;$('fpsCounter').textContent='FPS: '+Math.round(measuredFPS)+' / '+targetFPS}}
 }
+function reportRuntimeError(error){
+ const message=error?.message||String(error||'Bilinmeyen hata');
+ const el=$('loadError');el.style.display='block';el.textContent='Oyun hatası: '+message;
+ $('intro').classList.remove('hide');started=false;moveX=moveY=0;
+ console.error(error);
+}
+window.addEventListener('error',event=>reportRuntimeError(event.error||event.message));
+window.addEventListener('unhandledrejection',event=>reportRuntimeError(event.reason));
+renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();reportRuntimeError(new Error('Grafik belleği sıfırlandı. Sayfayı yenileyip düşük grafik ayarını seç.'))});
 function playNoiseSafe(){playTone(180,.08,'triangle',.03)}
 function setupControls(){
  $('startBtn').addEventListener('pointerdown',e=>{e.preventDefault();startGame()},{passive:false});
