@@ -26,9 +26,9 @@ export function createMopModel(THREE, mat) {
 }
 export function createPrepBoard(THREE, mat) {
  const g=new THREE.Group(),edge=mat(0x76502e,.75),wood=mat(0xc28b50,.82);
- const base=new THREE.Mesh(new THREE.BoxGeometry(1.65,.11,1.1),edge);base.position.y=.06;base.castShadow=true;g.add(base);
- const top=new THREE.Mesh(new THREE.BoxGeometry(1.58,.07,1.03),wood);top.position.y=.14;top.castShadow=true;g.add(top);
- for(let i=0;i<5;i++){const line=new THREE.Mesh(new THREE.BoxGeometry(.012,.003,.84),mat(0x9b6d3c));line.position.set(-.58+i*.29,.178,0);g.add(line)}
+ const base=new THREE.Mesh(new THREE.BoxGeometry(2.85,.11,1.35),edge);base.position.y=.06;base.castShadow=true;g.add(base);
+ const top=new THREE.Mesh(new THREE.BoxGeometry(2.78,.07,1.28),wood);top.position.y=.14;top.castShadow=true;g.add(top);
+ for(let i=0;i<9;i++){const line=new THREE.Mesh(new THREE.BoxGeometry(.012,.003,1.08),mat(0x9b6d3c));line.position.set(-1.2+i*.3,.178,0);g.add(line)}
  return g;
 }
 export function createGrill(THREE, mat) {
