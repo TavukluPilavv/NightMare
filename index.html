@@ -241,7 +241,7 @@ function updateTicket(){
 }
 function missingItems(){return currentOrder?currentOrder.items.filter(item=>!prepItems.includes(item)):[]}
 function updateOrderHud(){
- const h=$('orderHud');if(!currentOrder){h.style.display='none';h.textContent='';return}
+ const h=$('orderHud');if(!currentOrder){h.style.display='none';h.textContent='';updateTicket();return}
  h.style.display='block';h.textContent='📋 '+currentOrder.items.join('  •  ')+' | EKSİK: '+missingItems().join(', ');
  updateTicket();
 }
@@ -323,6 +323,7 @@ function serveOrder(){
  const missing=missingItems();if(missing.length){toast('Sipariş eksik: '+missing.join(', '));return}
  if(!breadOpen){toast('Ekmeği tahtada açmalısın.');return}
  if(!customer){toast('Müşteri henüz gelmedi.');return}
+ const deliveryDistance=camera.position.distanceTo(new THREE.Vector3(customer.position.x,1.0,customer.position.z));if(deliveryDistance>4.5){toast('Siparişi vermek için tezgâhın önündeki müşteriye yaklaş.');return}
  const bonus=(currentOrder.items.includes('Patates kızartması')?8:0)+(currentOrder.items.includes('Soğan halkası')?10:0);
  money+=45+bonus;orders++;toast('Sipariş müşteriye teslim edildi! +₺'+(45+bonus));playTone(760,.2);playDoor();
  clearBoard();clearHeld();currentOrder=null;updateOrderHud();removeCustomer();updateHud();customerTimer=8;nextPhoneAt=elapsed+18;
