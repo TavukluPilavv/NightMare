@@ -71,7 +71,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;tou
 <div class="modal hide" id="settingsModal"><div class="panel">
  <h1>⚙ AYARLAR</h1><label>Oyuncu adı</label><input id="playerName" maxlength="18" placeholder="Oyuncu">
  <p>Joystick boyutu</p><input id="joySize" type="range" min="100" max="160" value="126">
- <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select>
+ <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select><p>FPS sınırı</p><select id="fpsCap" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="30">30 FPS</option><option value="40">40 FPS</option><option value="60" selected>60 FPS</option></select>
  <button id="saveSettings" style="margin-top:14px">KAYDET</button><button id="closeSettings" style="margin-top:8px;background:#465463">KAPAT</button>
 </div></div>
 <div class="modal hide" id="scare"><div class="panel"><h1>ARKANDA!</h1><p>Bir anlığına ışıklar söndü. Az önce gördüğün şey hâlâ burada mı?</p><button id="continueScare">DEVAM ET</button></div></div>
@@ -103,7 +103,7 @@ let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:innerWidth>900,powerPreference:'high-performance'})}catch(webglError){const el=document.getElementById('loadError');el.style.display='block';el.textContent='Bu cihazda WebGL 3D desteği açılamadı. Tarayıcıyı güncelle veya başka bir cihaz dene.';throw webglError}
 let quality=(innerWidth<900||((navigator.deviceMemory||8)<=4)||((navigator.hardwareConcurrency||8)<=4))?'low':'medium';
 function applyQuality(){
- const ratio=quality==='low'?Math.min(devicePixelRatio,.78):quality==='high'?Math.min(devicePixelRatio,1.3):Math.min(devicePixelRatio,1.0);
+ const ratio=quality==='low'?Math.min(devicePixelRatio,.68):quality==='high'?Math.min(devicePixelRatio,1.15):Math.min(devicePixelRatio,.88);
  renderer.setPixelRatio(ratio);renderer.setSize(innerWidth,innerHeight);
  renderer.shadowMap.enabled=false;
  renderer.setClearColor(0x080d14,1);
@@ -119,6 +119,7 @@ let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false,co
 let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
 let nextPhoneAt=12,nextPowerAt=78,footstepTimer=0,customerTimer=8;
 const clock=new THREE.Clock(),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(0,0);
+let targetFPS=60,lastRenderAt=0;
 let yaw=0,pitch=0,moveX=0,moveY=0,joyId=null,lookId=null,lastLookX=0,lastLookY=0,desktopKeys={};
 
 const mat=(color,roughness=.8,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
@@ -205,13 +206,11 @@ function buildWorld(){
   root.userData.itemName=name;register(root,name,'ingredient');
  }
  // Telefonlar ve kagit
- const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-4.85,1.38,-4.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
+ const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-2.95,1.38,-4.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
  const patrol=createDeskPhone(THREE,mat);patrol.position.set(5.48,1.72,-3.65);patrol.rotation.y=Math.PI/2;patrol.scale.set(.82,.82,.82);register(patrol,'Patron telefonu','phone');patrolPhone=patrol;
  // Arka odada duvar dolaplari ve raflar
  for(let i=0;i<3;i++){const cab=addBox(scene,'arka oda dolabi',4.75,1.05,-5.05+i*.42,.72,2.05,.42,mat(0x49372a,.68));addBox(scene,'dolap kapagi',4.75,1.05,-4.82+i*.42,.66,1.94,.035,mat(0x715238,.6));addBox(scene,'dolap kolu',5.02,1.05,-4.78+i*.42,.025,.16,.035,mat(0xb6a27e,.35,.55))}
- const paperCanvas=document.createElement('canvas');paperCanvas.width=768;paperCanvas.height=300;const pg=paperCanvas.getContext('2d');pg.fillStyle='#f2e5c9';pg.fillRect(0,0,768,300);pg.fillStyle='#392819';pg.font='bold 42px sans-serif';pg.textAlign='center';pg.fillText('SİPARİŞ FİŞİ',384,65);pg.font='28px sans-serif';pg.fillText('Telefon çalınca sipariş burada görünür',384,160);
- orderTexture=new THREE.CanvasTexture(paperCanvas);const paperMat=new THREE.MeshBasicMaterial({map:orderTexture,side:THREE.DoubleSide});
- orderPaper=new THREE.Mesh(new THREE.PlaneGeometry(1.45,.72),paperMat);orderPaper.position.set(3.55,1.52,-4.48);orderPaper.rotation.y=-.18;orderPaper.userData={name:'Sipariş kağıdı',interactive:true};scene.add(orderPaper);interactables.push(orderPaper);
+ 
  // Hazirlama tahtasi, mangal, fritoz ve cop
  boardGroup=createPrepBoard(THREE,mat);boardGroup.position.set(0,1.39,-3.35);register(boardGroup,'Hazırlama tahtası','board');
  grillGroup=createGrill(THREE,mat);grillGroup.position.set(2.2,1.32,-3.48);register(grillGroup,'Mangal','grill');
@@ -253,12 +252,8 @@ function updateHud(){
  $('unlockFryerBtn').disabled=fryerUnlocked;$('unlockRingsBtn').disabled=ringsUnlocked||!fryerUnlocked;
  $('unlockFryerBtn').style.opacity=fryerUnlocked?'.55':'1';$('unlockRingsBtn').style.opacity=ringsUnlocked?'.55':fryerUnlocked?'1':'.55';
 }
-function updateTicket(){
- const canvas=orderTexture.image,ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f2e5c9';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#392819';ctx.textAlign='center';ctx.font='bold 42px sans-serif';ctx.fillText('MÜŞTERİ SİPARİŞİ',384,58);
- ctx.font='bold 28px sans-serif';if(currentOrder){ctx.fillText(currentOrder.count+' ADET TAVUK TANTUNİ',384,104);const lines=[];for(let i=0;i<currentOrder.items.length;i+=2)lines.push(currentOrder.items.slice(i,i+2).join(' • '));lines.forEach((line,i)=>ctx.fillText(line,384,148+i*38));ctx.font='22px sans-serif';ctx.fillText('Eksikler: '+missingItems().join(', '),384,275)}else{ctx.font='28px sans-serif';ctx.fillText('Henüz sipariş yok',384,170)}
- orderTexture.needsUpdate=true;
-}
-function missingItems(){if(!currentOrder)return[];return currentOrder.items.filter(item=>prepItems.filter(value=>value===item).length<currentOrder.count).map(item=>item+' x'+(currentOrder.count-prepItems.filter(value=>value===item).length))}
+function updateTicket(){}
+function missingItems(){if(!currentOrder)return[];const missing={};for(let i=0;i<currentOrder.count;i++){const bread=breadVisuals[i];for(const item of currentOrder.items){const done=item==='Ekmek'?!!bread:!!bread?.userData.contents?.includes(item);if(!done)missing[item]=(missing[item]||0)+1}}return Object.entries(missing).map(([item,count])=>item+' x'+count)}
 function updateOrderHud(){
  const h=$('orderHud');if(!currentOrder){h.style.display='none';h.textContent='';updateTicket();return}
  h.style.display='block';h.textContent='📋 '+currentOrder.count+' TANTUNİ · '+currentOrder.items.join('  •  ')+' | EKSİK: '+missingItems().join(', ');
@@ -279,7 +274,7 @@ function clearHeld(){if(heldVisual){camera.remove(heldVisual);heldVisual=null}he
 function spawnCustomer(){
  if(customer)return;
  const chance=Math.min(.09+orders*.025,.34);customerStrange=day>=2&&Math.random()<chance;
- customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customer.scale.setScalar(1.03);
+ customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customer.scale.setScalar(1.14);
  customer.position.set((Math.random()-.5)*1.4,0,9.2);customer.userData.name='Müşteri';customer.userData.interactive=true;customer.userData.walking=true;customer.userData.setExpression?.(customerStrange?'angry':'happy');scene.add(customer);interactables.push(customer);
  doorOpen=true;frontDoor.rotation.y=-1.15;playDoorBell();playCustomerVoice(customerStrange);playCustomerTalk(customerStrange);
  showDialogue(customerStrange?'ŞÜPHELİ MÜŞTERİ':'MÜŞTERİ',customerStrange?'Usta… beni bekletme. Burada gece uzun.':'İyi akşamlar, kolay gelsin. Bir tavuk tantuni alabilir miyim?','red');
@@ -287,7 +282,7 @@ function spawnCustomer(){
 }
 function spawnCourier(){
  if(courier)return;
- courier=createHumanCustomer(THREE,{variant:2,role:'courier'});courier.scale.setScalar(1.02);courier.position.set(.6,0,9.4);courier.userData.name='Kurye';courier.userData.interactive=true;courier.userData.setExpression?.('neutral');scene.add(courier);interactables.push(courier);courierLeaving=false;doorOpen=true;frontDoor.rotation.y=-1.15;playDoorBell();playMotorbikeArrival();showDialogue('KURYE','Paket hazır olunca bana ver usta.','red');toast('Kasklı kurye geldi. Siparişi hazırlayıp ona teslim et.');objective('Kurye bekliyor. Tantunileri hazırla ve kuryeye ver.');
+ courier=createHumanCustomer(THREE,{variant:2,role:'courier'});courier.scale.setScalar(1.13);courier.position.set(.6,0,9.4);courier.userData.name='Kurye';courier.userData.interactive=true;courier.userData.setExpression?.('neutral');scene.add(courier);interactables.push(courier);courierLeaving=false;doorOpen=true;frontDoor.rotation.y=-1.15;playDoorBell();playMotorbikeArrival();showDialogue('KURYE','Paket hazır olunca bana ver usta.','red');toast('Kasklı kurye geldi. Siparişi hazırlayıp ona teslim et.');objective('Kurye bekliyor. Tantunileri hazırla ve kuryeye ver.');
 }
 function removeCourier(){if(!courier)return;scene.remove(courier);const i=interactables.indexOf(courier);if(i>=0)interactables.splice(i,1);courier=null;courierLeaving=false;}
 function removeCustomer(){
@@ -299,7 +294,7 @@ function makeOrder(fromPhone=true){
  const items=['Ekmek','Pişmiş tavuk','Marul','Soğan'];
  if(Math.random()<.68)items.push('Domates');if(Math.random()<.34)items.push('Ketçap');if(Math.random()<.28)items.push('Mayonez');if(Math.random()<.18)items.push('Hardal');
  if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
- const count=1+Math.floor(Math.random()*3);currentOrder={items,count,createdAt:elapsed};updateOrderHud();
+ const count=1+Math.floor(Math.random()*3);currentOrder={items,count,delivered:0,createdAt:elapsed};updateOrderHud();
  if(fromPhone)spawnCourier();else if(!customer)spawnCustomer();
  const message=count+' adet tavuk tantuni istendi. Malzemeleri sipariş fişinden takip et.';showDialogue(fromPhone?'TELEFON':'MÜŞTERİ',fromPhone?'Merhaba, paket siparişi hazırlar mısınız? Kurye yola çıkıyor.':(customerStrange?'Ne bakıyorsun? Üç tane tantuni istiyorum.':'Bir tavuk tantuni alabilir miyim?'), 'red');
  toast(message);objective((fromPhone?'Kuryeye teslim edilecek ':'Müşteriye hazırlanacak ')+count+' tantuniyi tek tek hazırla.');playCustomerTalk(customerStrange);
@@ -325,12 +320,12 @@ function putHeldItem(){
  if(heldItem==='Doğranmış patates'&&fryerUnlocked){toast('Doğranmış patatesi fritözde kızart.');return}
  if(heldItem==='Ekmek'){
   if(breadOpen&&currentOrder&&prepItems.filter(value=>value==='Ekmek').length>=currentOrder.count){toast('İstenen ekmeklerin hepsi hazır.');return}
-  breadOpen=true;const index=breadVisuals.length;const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));const total=currentOrder?.count||1;const x=(index-(total-1)/2)*.88;bread.position.set(x,.24,0);bread.scale.set(.78,.78,.82);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();breadVisuals.push(bread);if(!breadVisual)breadVisual=bread;prepItems.push('Ekmek');clearHeld();toast((index+1)+'. ekmeği tahtaya koydun. '+(total-index-1)+' ekmek kaldı.');playPlace();updateOrderHud();return;
+  breadOpen=true;const index=breadVisuals.length;const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));const total=currentOrder?.count||1;const x=(index-(total-1)/2)*.88;bread.position.set(x,.24,0);bread.scale.set(.9,.9,.92);bread.userData.contents=[];boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();breadVisuals.push(bread);if(!breadVisual)breadVisual=bread;prepItems.push('Ekmek');clearHeld();toast((index+1)+'. ekmeği tahtaya koydun. '+(total-index-1)+' ekmek kaldı.');playPlace();updateOrderHud();return;
  }
  if(!breadOpen){toast('Önce ekmeği tahtaya koyup aç.');return}
  const item=heldItem;const total=currentOrder?.count||1;
- if(['Ketçap','Mayonez','Hardal'].includes(item)){if(prepItems.filter(value=>value===item).length>=total){toast(item+' siparişteki bütün tantunilere eklendi.');return}const index=breadVisuals.findIndex((bread,i)=>!bread.userData.contents?.includes(item));if(index<0){toast('Önce bir ekmek daha koy veya bu ürünü ekle.');return}breadVisuals[index].userData.contents||=[];breadVisuals[index].userData.contents.push(item);squeezeSauce(item,index);return}
- const already=prepItems.filter(value=>value===item).length;if(already>=total){toast(item+' siparişteki bütün tantunilere eklendi.');return}if(breadVisuals.length<total){toast('Önce '+(total-breadVisuals.length)+' ekmek daha koy.');return}const index=breadVisuals.findIndex(bread=>!bread.userData.contents?.includes(item));if(index<0){toast('Bu ürünü bütün ekmeklere zaten koydun.');return}const visual=createProductModel(THREE,item,productColor(item));const slot=breadVisuals[index].userData.contents?.length||0;visual.position.set((slot%3-1)*.09,.19+Math.floor(slot/3)*.025,(Math.floor(slot/3)-1)*.045);visual.scale.set(.62,.62,.62);breadVisuals[index].add(visual);boardVisuals.push(visual);breadVisuals[index].userData.contents||=[];breadVisuals[index].userData.contents.push(item);prepItems.push(item);clearHeld();playPlace();toast(item+' '+(index+1)+'. tantuniye tek tek eklendi.');updateOrderHud();
+ if(['Ketçap','Mayonez','Hardal'].includes(item)){if(prepItems.filter(value=>value===item).length>=total){toast(item+' siparişteki bütün tantunilere eklendi.');return}const index=breadVisuals.findIndex((bread,i)=>i>=(currentOrder?.delivered||0)&&!bread.userData.contents?.includes(item));if(index<0){toast('Önce bir ekmek daha koy veya bu ürünü ekle.');return}breadVisuals[index].userData.contents||=[];breadVisuals[index].userData.contents.push(item);squeezeSauce(item,index);return}
+ const already=prepItems.filter(value=>value===item).length;if(already>=total){toast(item+' siparişteki bütün tantunilere eklendi.');return}if(breadVisuals.length<total){toast('Önce '+(total-breadVisuals.length)+' ekmek daha koy.');return}const index=breadVisuals.findIndex((bread,i)=>i>=(currentOrder?.delivered||0)&&!bread.userData.contents?.includes(item));if(index<0){toast('Bu ürünü bütün ekmeklere zaten koydun.');return}const visual=createProductModel(THREE,item,productColor(item));const slot=breadVisuals[index].userData.contents?.length||0;visual.position.set((slot%3-1)*.09,.19+Math.floor(slot/3)*.025,(Math.floor(slot/3)-1)*.045);visual.scale.set(.62,.62,.62);breadVisuals[index].add(visual);boardVisuals.push(visual);breadVisuals[index].userData.contents||=[];breadVisuals[index].userData.contents.push(item);prepItems.push(item);clearHeld();playPlace();toast(item+' '+(index+1)+'. tantuniye tek tek eklendi.');updateOrderHud();
 }
 function clearBoard(){
  for(const visual of boardVisuals)visual.parent?.remove(visual);boardVisuals.length=0;prepItems=[];breadOpen=false;breadVisual=null;breadVisuals=[];updateOrderHud();
@@ -363,14 +358,19 @@ function unlockRings(){
 }
 function serveOrder(){
  if(!currentOrder){toast('Teslim edilecek sipariş yok.');return}
- const missing=missingItems();if(missing.length){toast('Sipariş eksik: '+missing.join(', '));return}
- if(!breadOpen){toast('Ekmeği tahtada açmalısın.');return}
+ const nextIndex=currentOrder.delivered||0;
+ const bread=breadVisuals[nextIndex];
+ if(!bread){toast('Önce '+(currentOrder.count-breadVisuals.length)+' ekmek daha hazırla.');return}
+ const missing=currentOrder.items.filter(item=>item!=='Ekmek'&&!bread.userData.contents?.includes(item));
+ if(missing.length){toast((nextIndex+1)+'. tantuni eksik: '+missing.join(', '));return}
  const receiver=courier||customer;if(!receiver){toast('Siparişi alacak kişi henüz gelmedi.');return}
  const deliveryDistance=camera.position.distanceTo(new THREE.Vector3(receiver.position.x,1.0,receiver.position.z));if(deliveryDistance>4.5){toast('Siparişi teslim etmek için kişiye yaklaş.');return}
  const bonus=(currentOrder.items.includes('Patates kızartması')?8:0)+(currentOrder.items.includes('Soğan halkası')?10:0);
- money+=(45+bonus)*currentOrder.count;orders++;toast(currentOrder.count+' tantuni teslim edildi! +₺'+((45+bonus)*currentOrder.count));playTone(760,.2);playDoor();
- clearBoard();clearHeld();currentOrder=null;updateOrderHud();updateHud();
- if(courier){courierLeaving=true;showDialogue('KURYE','Paketi aldım, hemen götürüyorum.','red');playMotorbikeDeparture();objective('Kurye paketi götürüyor. Bir sonraki müşteriyi bekle.');}
+ bread.visible=false;currentOrder.delivered++;money+=45+bonus;updateHud();
+ toast((nextIndex+1)+' / '+currentOrder.count+' tantuni tek tek teslim edildi! +₺'+(45+bonus));playTone(760,.2);playDoor();
+ if(currentOrder.delivered<currentOrder.count){objective((currentOrder.count-currentOrder.delivered)+' tantuni daha teslim et. Her birini ayrı ayrı ver.');return}
+ orders++;clearBoard();clearHeld();currentOrder=null;updateOrderHud();updateHud();
+ if(courier){courierLeaving=true;showDialogue('KURYE','Paketleri aldım, hemen götürüyorum.','red');playMotorbikeDeparture();objective('Kurye dükkândan yürüyerek çıkıyor. Sonra sıradaki müşteri gelecek.');}
  else{removeCustomer();customerTimer=8;nextPhoneAt=elapsed+18;objective('Sipariş tamamlandı. Yeni müşteriyi bekle.');}
  if(orders===2)toast('İlk kazançlar birikti. Fritöz yükseltmesini açabilirsin.');
 }
@@ -436,7 +436,7 @@ function interact(target){
   const line=lines[Math.floor(Math.random()*lines.length)];showDialogue(customerStrange?'GARİP MÜŞTERİ':'MÜŞTERİ',line,'red');customer.userData.setExpression?.(customerStrange?'angry':'happy');playCustomerTalk(customerStrange);
   if(!currentOrder){showDialogue('SEN','Hoş geldiniz. Ne alırsınız?','blue');setTimeout(()=>{if(customer)makeOrder(false)},1200)}else{showDialogue('SEN','Tamamdır, hemen hazırlıyorum.','blue');playCustomerTalk(customerStrange)}return;
  }
- if(name==='Sipariş kağıdı'){toast(currentOrder?'Sipariş: '+currentOrder.items.join(', '):'Henüz sipariş yok.');return}
+ 
  toast(name+' ile etkileşime geçtin.');
 }
 function rayInteract(){
@@ -449,7 +449,7 @@ function updateMovement(dt){
  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
  const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
- const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.0);
+ const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.5);
  camera.position.x=THREE.MathUtils.clamp(camera.position.x,-24,24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,37);
  // On tezgahin icinden gecilmez; oyuncu iki yandan dolasip hazirlik alanina ulasir.
  if(camera.position.z<.35&&camera.position.z> -1.25&&Math.abs(camera.position.x)<3.35){camera.position.x=oldX;camera.position.z=oldZ}
@@ -479,19 +479,19 @@ function animate(now=0){
    if(!shiftClosing&&elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
    if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
    if(shiftStarted&&!shiftClosing&&elapsed-shiftStartElapsed>=180){beginClosingShift()}
-   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*.72);customer.userData.animate?.(elapsed,true)}else if(customer){customer.userData.animate?.(elapsed,false)}
-   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*.92);courier.userData.animate?.(elapsed,true)}else if(courier&&courierLeaving){courier.position.z+=dt*1.45;courier.userData.animate?.(elapsed,true);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false)}
+   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*1.28);customer.userData.animate?.(elapsed,true)}else if(customer){customer.userData.animate?.(elapsed,false)}
+   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*1.48);courier.userData.animate?.(elapsed,true)}else if(courier&&courierLeaving){courier.position.z+=dt*1.8;courier.userData.animate?.(elapsed,true);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false)}
    if(customer&&customerStrange&&currentOrder&&customer.position.z<=1.58&&elapsed>=nextStrangeScareAt&&scareCooldown<=0){nextStrangeScareAt=elapsed+38+Math.random()*45;if(Math.random()<.13){const behind=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));apparition=createHumanCustomer(THREE,{strange:true,variant:7,role:'customer'});apparition.scale.setScalar(1.1);apparition.position.copy(camera.position).addScaledVector(behind,1.25);apparition.position.y=0;scene.add(apparition);apparitionTimer=2.2;jumpscare('Arkana biri geldi! Bir anda ensende nefesini hissettin.')}}
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
   }
-  if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*5.2;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*.42;if(person.position.x>12||person.position.x< -12)person.userData.walkDirection*=-1;person.userData.animate?.(elapsed,true)}}
+  if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*5.2;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*.88;if(person.position.x>12||person.position.x< -12)person.userData.walkDirection*=-1;person.userData.animate?.(elapsed,true)}}
   if(apparition){apparitionTimer-=dt;apparition.userData.animate?.(elapsed,false);if(apparitionTimer<=0)removeBlackoutFigure();if(apparitionTimer>0&&camera.position.distanceTo(apparition.position)<1.9&&scareCooldown<=0&&Math.random()<.0007)jumpscare('Karanlıktaki siluet bir anda yüzüne doğru atıldı!')}
   if(blackoutActive&&Math.random()<.025){mainLamp.intensity=Math.random()*2}
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
  }
  if(now-lastPerfCheck>2200&&frameSamples>30){const avg=frameTimeTotal/frameSamples;if(avg>27&&quality!=='low'){quality='low';$('quality').value='low';applyQuality();toast('Akıcılık için grafikler otomatik düşürüldü.')}lastPerfCheck=now;frameSamples=0;frameTimeTotal=0}
- frameSamples++;frameTimeTotal+=dt*1000;renderer.render(scene,camera);
+ frameSamples++;frameTimeTotal+=dt*1000;if(now-lastRenderAt>=1000/targetFPS){lastRenderAt=now;renderer.render(scene,camera)}
 }
 function playNoiseSafe(){playTone(180,.08,'triangle',.03)}
 function setupControls(){
@@ -506,7 +506,7 @@ function setupControls(){
  $('settingsBtn').addEventListener('click',()=>{$('playerName').value=$('playerHud').textContent.replace('👤 ','');$('settingsModal').classList.remove('hide')});
  $('closeSettings').addEventListener('click',()=>$('settingsModal').classList.add('hide'));
  $('quality').value=quality;
- $('saveSettings').addEventListener('click',()=>{const name=$('playerName').value.trim()||'Oyuncu';$('playerHud').textContent='👤 '+name;quality=$('quality').value;const size=Number($('joySize').value);$('joy').style.width=size+'px';$('joy').style.height=size+'px';$('stick').style.left=((size-50)/2)+'px';$('stick').style.top=((size-50)/2)+'px';applyQuality();$('settingsModal').classList.add('hide');toast('Ayarlar kaydedildi.')});
+ $('saveSettings').addEventListener('click',()=>{const name=$('playerName').value.trim()||'Oyuncu';$('playerHud').textContent='👤 '+name;quality=$('quality').value;targetFPS=Number($('fpsCap').value)||60;lastRenderAt=0;const size=Number($('joySize').value);$('joy').style.width=size+'px';$('joy').style.height=size+'px';$('stick').style.left=((size-50)/2)+'px';$('stick').style.top=((size-50)/2)+'px';applyQuality();$('settingsModal').classList.add('hide');toast('Ayarlar kaydedildi.')});
  const joy=$('joy'),stick=$('stick');function joyMove(e){const r=joy.getBoundingClientRect();let x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=Math.max(32,r.width*.34);if(len>max){x=x/len*max;y=y/len*max}stick.style.transform='translate('+x+'px,'+y+'px)';moveX=x/max;moveY=-y/max}
  joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)},{passive:false});
  joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});
