@@ -44,3 +44,34 @@ export function createMopModel(THREE, mat) {
   root.rotation.z=-.16;
   return root;
 }
+
+export function createPrepBoard(THREE, mat) {
+ const g=new THREE.Group();
+ const wood=mat(0xc28b50,.82), edge=mat(0x76502e,.75);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(1.55,.11,1.05),edge);base.position.y=.06;base.castShadow=true;g.add(base);
+ const top=new THREE.Mesh(new THREE.BoxGeometry(1.5,.07,1),wood);top.position.y=.14;top.castShadow=true;g.add(top);
+ for(let i=0;i<5;i++){const line=new THREE.Mesh(new THREE.BoxGeometry(.012,.003,.82),mat(0x9b6d3c));line.position.set(-.58+i*.29,.178,0);g.add(line)}
+ return g;
+}
+export function createGrill(THREE, mat) {
+ const g=new THREE.Group(), steel=mat(0x555d61,.35,.65), black=mat(0x171a1c,.65), grate=mat(0x9ba1a2,.3,.75);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(1.55,.5,1.05),steel);base.position.y=.25;base.castShadow=true;g.add(base);
+ const hot=new THREE.Mesh(new THREE.BoxGeometry(1.35,.08,.84),black);hot.position.set(0,.55,0);g.add(hot);
+ for(let i=0;i<11;i++){const bar=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.84,8),grate);bar.rotation.x=Math.PI/2;bar.position.set(-.6+i*.12,.62,0);g.add(bar)}
+ for(const x of [-.5,.5]){const knob=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.05,16),mat(0xc64b31,.35));knob.rotation.x=Math.PI/2;knob.position.set(x,.32,.54);g.add(knob)}
+ return g;
+}
+export function createTrashBin(THREE, mat) {
+ const g=new THREE.Group(), body=mat(0x34434a,.75), lid=mat(0x20292e,.55);
+ const bin=new THREE.Mesh(new THREE.CylinderGeometry(.34,.29,.82,20),body);bin.position.y=.41;bin.castShadow=true;g.add(bin);
+ const top=new THREE.Mesh(new THREE.CylinderGeometry(.36,.36,.09,20),lid);top.position.y=.85;g.add(top);
+ const hole=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.012,20),mat(0x090d10));hole.position.y=.902;g.add(hole);
+ return g;
+}
+export function createSauceBottle(THREE, color) {
+ const g=new THREE.Group(), plastic=new THREE.MeshStandardMaterial({color,roughness:.28});
+ const bottle=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.48,20),plastic);bottle.position.y=.25;bottle.castShadow=true;g.add(bottle);
+ const neck=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,.12,16),plastic);neck.position.y=.55;g.add(neck);
+ const cap=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.07,16),new THREE.MeshStandardMaterial({color:0x252525}));cap.position.y=.645;g.add(cap);
+ return g;
+}
