@@ -17,11 +17,34 @@ export function createDeskPhone(THREE, mat) {
   root.userData.handset=handset;return root;
 }
 export function createMopModel(THREE, mat) {
-  const root=new THREE.Group(),wood=mat(0x9b744b,.75),metal=mat(0x858d91,.35,.55),cloth=mat(0xd8d0bd,.95),dark=mat(0x8d806c,.9);
-  const handle=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,1.35,12),wood);handle.position.set(0,.86,0);handle.castShadow=true;root.add(handle);
-  const grip=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.18,12),metal);grip.position.set(0,1.42,0);root.add(grip);
-  const head=new THREE.Mesh(new THREE.BoxGeometry(.48,.11,.22),metal);head.position.set(0,.16,0);head.castShadow=true;root.add(head);
-  for(let i=0;i<13;i++){const strand=new THREE.Mesh(new THREE.CylinderGeometry(.012,.018,.28,5),i%2?cloth:dark);strand.position.set((i-6)*.034,.005,(i%2-.5)*.11);strand.rotation.z=(i-6)*.018;strand.castShadow=true;root.add(strand)}
+  const root=new THREE.Group(),wood=mat(0x9b744b,.75),metal=mat(0x858d91,.35,.55);
+  const fibres=[mat(0xe0d9c9,.98),mat(0xc9c1b1,.98),mat(0x9a8d79,.98),mat(0xd5cdbd,.98)];
+  const handle=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,1.35,16),wood);
+  handle.position.set(0,.86,0);handle.castShadow=true;handle.receiveShadow=true;root.add(handle);
+  const grip=new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.18,16),metal);grip.position.set(0,1.42,0);root.add(grip);
+  const collar=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.12,16),metal);collar.position.set(0,.205,0);root.add(collar);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.54,.12,.25),metal);head.position.set(0,.15,0);head.castShadow=true;root.add(head);
+  const band=new THREE.Mesh(new THREE.BoxGeometry(.5,.035,.27),fibres[1]);band.position.set(0,.215,0);root.add(band);
+  // Lifler zemine dogru sarkar ve gercek paspas gibi kivrim yapar.
+  for(let i=0;i<28;i++){
+    const baseX=((i%14)-6.5)*.034,baseZ=(Math.floor(i/14)-.5)*.105,points=[];
+    for(let j=0;j<=10;j++){
+      const t=j/10,x=baseX+Math.sin(t*7.2+i*.83)*(.012+t*.022);
+      const z=baseZ+Math.cos(t*6.4+i*.57)*(.012+t*.026),y=.105-t*.105+Math.sin(t*8+i)*.012;
+      points.push(new THREE.Vector3(x,y,z));
+    }
+    const curve=new THREE.CatmullRomCurve3(points);
+    const strand=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.012+(i%3)*.002,6,false),fibres[i%fibres.length]);
+    strand.castShadow=true;strand.receiveShadow=true;root.add(strand);
+  }
+  for(let i=0;i<12;i++){
+    const a=i*Math.PI*2/12,curve=new THREE.CatmullRomCurve3([
+      new THREE.Vector3(Math.cos(a)*.08,.035,Math.sin(a)*.05),
+      new THREE.Vector3(Math.cos(a)*.16,.022,Math.sin(a)*.09),
+      new THREE.Vector3(Math.cos(a)*.23,.012,Math.sin(a)*.12)
+    ]);
+    root.add(new THREE.Mesh(new THREE.TubeGeometry(curve,10,.009,5,false),fibres[i%fibres.length]));
+  }
   root.rotation.z=-.16;return root;
 }
 export function createPrepBoard(THREE, mat) {
