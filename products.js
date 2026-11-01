@@ -28,8 +28,26 @@ export function createProductModel(THREE, name, color) {
     root.userData.openBread=()=>{topGroup.rotation.x=-.82;topGroup.position.z=-.18};
     root.userData.fillAnchor=new THREE.Vector3(0,.16,.02);
   } else if(name==='Çiğ tavuk'||name==='Pişmiş tavuk'){
-    const cooked=name==='Pişmiş tavuk';const meat=cooked?material(0xb87543,.62):material(0xe9b6a1,.68),edge=cooked?material(0x70402b,.82):material(0xd18c78,.78),sear=material(0x493022,.88);
-    for(let i=0;i<18;i++){const a=i*2.399,r=.045+Math.sqrt(i/18)*.18;const piece=new THREE.Mesh(new THREE.CapsuleGeometry(.045,.105,4,8),i%4===0?edge:meat);piece.position.set(Math.cos(a)*r,.055+(i%3)*.012,Math.sin(a)*r*.72);piece.rotation.set(.15+(i%3)*.13,a*.65,(i%5-2)*.18);piece.scale.set(1.05,.52,.72);piece.castShadow=true;root.add(piece);if(cooked&&i%3===0){const mark=new THREE.Mesh(new THREE.BoxGeometry(.018,.008,.075),sear);mark.position.set(piece.position.x,piece.position.y+.027,piece.position.z);mark.rotation.y=a*.65;root.add(mark)}}
+    const cooked=name==='Pişmiş tavuk';
+    const meat=cooked?material(0xb87543,.66):material(0xe9b6a1,.7);
+    const edge=cooked?material(0x70402b,.84):material(0xd18c78,.8);
+    const sear=material(0x493022,.9),gold=cooked?material(0xd39a55,.72):meat;
+    // Tantuni için küçük, yuvarlak ve düzensiz doğranmış tavuk parçaları.
+    for(let i=0;i<22;i++){
+      const a=i*2.399,r=.035+Math.sqrt((i+.5)/22)*.19;
+      const piece=new THREE.Mesh(new THREE.SphereGeometry(.105,18,14),i%5===0?edge:(i%4===0?gold:meat));
+      piece.position.set(Math.cos(a)*r,.052+(i%4)*.012,Math.sin(a)*r*.72);
+      piece.rotation.set(.15+(i%3)*.16,a*.7,(i%5-2)*.2);
+      piece.scale.set(.92+(i%3)*.14,.42+(i%4)*.07,.64+(i%2)*.16);
+      piece.castShadow=true;piece.receiveShadow=true;root.add(piece);
+      if(cooked&&i%2===0){
+        for(let stripe=0;stripe<2;stripe++){
+          const mark=new THREE.Mesh(new THREE.BoxGeometry(.014,.006,.058),sear);
+          mark.position.set(piece.position.x+(stripe-.5)*.035,piece.position.y+.035,piece.position.z+(stripe-.5)*.018);
+          mark.rotation.y=a*.7;root.add(mark);
+        }
+      }
+    }
 
   } else if(name==='Marul'){
     const leafMat=material(0x659d43,.94),lightLeaf=material(0x83b653,.92),vein=material(0xb5ce82,.92);
