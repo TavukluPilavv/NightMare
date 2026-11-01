@@ -4,6 +4,7 @@ export function createHumanCustomer(THREE, options = {}) {
   const mat=(color,roughness=.82,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
   const skins=[0xc58b68,0xe2b18e,0x8a5b43,0xf0c9a4,0xb87955,0xd29c77,0x9a6b52,0xdcb59a];
   const shirts=[0x245c91,0x477a45,0x8a3e36,0x76529a,0xb07828,0x34495b,0x9c5b37,0x426b70];
+  const jackets=[0x263747,0x4b514b,0x453b39,0x343b50,0x66513e,0x273c43,0x54434a,0x384b45];
   const hairColors=[0x21150f,0x493020,0x17191d,0x9b6335,0x302b28,0x66513b];
   const skin=mat(strange?0xc8c3bd:skins[variant%skins.length]);
   const shirt=mat(strange?0x171319:(role==="courier"?0x273d32:shirts[variant%shirts.length]));
@@ -13,7 +14,11 @@ export function createHumanCustomer(THREE, options = {}) {
   const add=(geo,m,x,y,z,parent=group)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
   if(role==="pedestrian"){
     const skin=mat(skins[variant%skins.length]),shirt=mat(shirts[variant%shirts.length]),pants=mat([0x20242a,0x34302c,0x303b4b,0x4a3831][variant%4]),hair=mat(hairColors[variant%hairColors.length]),shoe=mat(0x17191c,.72);
-    const torso=add(new THREE.CapsuleGeometry(.27,.58,4,8),shirt,0,1.12,0);torso.scale.set(1,.96,.72);
+    const jacket=mat(jackets[variant%jackets.length]);const torso=add(new THREE.CapsuleGeometry(.285,.61,4,8),jacket,0,1.12,0);torso.scale.set(1.02,.98,.76);
+    add(new THREE.BoxGeometry(.17,.48,.025),shirt,0,1.13,-.205);add(new THREE.BoxGeometry(.018,.46,.018),mat(0xaaa18c,.45,.35),0,1.13,-.224);
+    add(new THREE.BoxGeometry(.15,.09,.035),jacket,-.085,1.45,-.19);add(new THREE.BoxGeometry(.15,.09,.035),jacket,.085,1.45,-.19);
+    const female=variant%2===0;if(female){const longHair=add(new THREE.SphereGeometry(.22,12,10),hair,0,1.68,.12);longHair.scale.set(1.08,1.35,.7);for(const hx of [-.2,.2]){const lock=add(new THREE.CapsuleGeometry(.045,.28,3,6),hair,hx,1.61,.08);lock.rotation.z=hx*.2}}
+    if(female&&variant%4===0){const skirt=add(new THREE.CylinderGeometry(.19,.29,.38,16),mat([0x343744,0x51423b,0x3c4b50,0x5b4145][variant%4]),0,.77,0);skirt.scale.z=.82}
     const head=add(new THREE.SphereGeometry(.235,12,9),skin,0,1.82,0);head.scale.set(.94,1.08,.96);
     add(new THREE.SphereGeometry(.245,12,8,0,Math.PI*2,0,Math.PI*.55),hair,0,1.9,.012);
     const arms=[],legs=[];
@@ -23,7 +28,7 @@ export function createHumanCustomer(THREE, options = {}) {
     group.userData={strange:false,variant,role,arms,legs,walkPhase:Math.random()*6,baseYaw:0,animate:(time,walking=false)=>{const phase=time*8.5+group.userData.walkPhase,swing=walking?Math.sin(phase)*.52:Math.sin(time*1.5)*.025;arms[0].rotation.x=swing;arms[1].rotation.x=-swing;legs[0].rotation.x=-swing*.85;legs[1].rotation.x=swing*.85;group.position.y=walking?Math.abs(Math.sin(phase*2))*.025:0;group.rotation.y=(group.userData.baseYaw||0)+Math.sin(time*.9+variant)*.018}};
     return group;
   }
-  const torso=add(new THREE.CapsuleGeometry(.29+(variant%3)*.025,.56+(variant%2)*.1,6,16),shirt,0,1.13,0);torso.scale.set(1,.98,.72);
+  const jacket=mat(jackets[variant%jackets.length]);const torso=add(new THREE.CapsuleGeometry(.305+(variant%3)*.025,.59+(variant%2)*.1,6,16),jacket,0,1.13,0);torso.scale.set(1.02,.99,.76);add(new THREE.BoxGeometry(.18,.5,.025),shirt,0,1.13,-.215);add(new THREE.BoxGeometry(.018,.47,.018),mat(0xb5a78e,.45,.3),0,1.13,-.235);const female=variant%2===0;if(female){const longHair=add(new THREE.SphereGeometry(.23,16,12),hair,0,1.73,.12);longHair.scale.set(1.08,1.5,.72);for(const hx of [-.21,.21]){const lock=add(new THREE.CapsuleGeometry(.05,.32,4,7),hair,hx,1.55,.08);lock.rotation.z=hx*.18}}
   const neck=add(new THREE.CylinderGeometry(.095,.12,.18,14),skin,0,1.64,0);
   const head=new THREE.Group();head.position.set(0,1.83,0);group.add(head);
   const skull=add(new THREE.SphereGeometry(.255,32,24),skin,0,1.83,0);head.add(skull);skull.position.set(0,0,0);skull.scale.set(.94,1.08,.96);
