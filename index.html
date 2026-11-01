@@ -73,12 +73,12 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;tou
  <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select>
  <button id="saveSettings" style="margin-top:14px">KAYDET</button><button id="closeSettings" style="margin-top:8px;background:#465463">KAPAT</button>
 </div></div>
-<div class="modal hide" id="scare"><div class="panel"><h1>ARKANDA!</h1><p>Bir anlığına ışıklar söndü. Az önce gördüğün şey hâlâ burada mı?</p><button id="continueScare">GÖZLERİNİ AÇ</button></div></div>
+<div class="modal hide" id="scare"><div class="panel"><h1>ARKANDA!</h1><p>Bir anlığına ışıklar söndü. Az önce gördüğün şey hâlâ burada mı?</p><button id="continueScare">DEVAM ET</button></div></div>
 <script type="module">
 import { createHumanCustomer } from './characters.js';
-import { createDeskPhone, createMopModel, createPrepBoard, createGrill, createTrashBin, createFryer } from './props.js';
+import { createDeskPhone, createMopModel, createPrepBoard, createGrill, createTrashBin, createFryer, createPotatoCutter, createSauceBottle } from './props.js';
 import { createProductModel } from './products.js';
-import { playTone, playDoor, playFryer, playScare, playCustomerVoice, playFootstep, startShopAmbience, startPhoneRing, stopPhoneRing, playPowerCut, playWhisper } from './audio.js';
+import { playTone, playDoor, playFryer, playScare, playCustomerVoice, playFootstep, startShopAmbience, startPhoneRing, stopPhoneRing, playPowerCut, playWhisper, playPickup, playPlace, playChop, playWash, playDoorBell, playCustomerTalk } from './audio.js';
 
 let THREE;
 try { THREE = await import('./three.module.js'); }
@@ -94,8 +94,8 @@ catch (localError) {
 }
 const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x172432);
-scene.fog=new THREE.FogExp2(0x263746,.008);
+scene.background=new THREE.Color(0x080d14);
+scene.fog=new THREE.FogExp2(0x111a25,.014);
 const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,150);
 camera.position.set(0,1.85,34);camera.rotation.order='YXZ';
 let renderer;
@@ -106,12 +106,12 @@ function applyQuality(){
  renderer.setPixelRatio(ratio);renderer.setSize(innerWidth,innerHeight);
  renderer.shadowMap.enabled=quality==='high';renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 }
-renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.28;
+renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;
 document.body.appendChild(renderer.domElement);applyQuality();
 
 const interactables=[],cars=[],walkers=[],streetLights=[],boardVisuals=[];
-let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,lever,boardGroup,grillGroup,fryerGroup,mopGroup,stain,orderPaper,orderTexture,customer=null;
-let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,apparition=null,apparitionTimer=0;
+let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,lever,boardGroup,grillGroup,fryerGroup,cutterGroup,mopGroup,stain,orderPaper,orderTexture,customer=null,openSign,bathroomDoor;
+let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
 let money=0,orders=0,day=1,elapsed=0,toastTimer=0,phoneRinging=false,patrolRinging=false,patrolCallDone=false;
 let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false;
 let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
@@ -160,8 +160,8 @@ function makeCar(x,z,color,direction){
  g.position.set(x,0,z);g.userData.direction=direction;scene.add(g);cars.push(g);
 }
 function buildWorld(){
- scene.add(new THREE.HemisphereLight(0xc9e4ff,0x59412f,1.05));
- scene.add(new THREE.AmbientLight(0xffffff,.24));
+ scene.add(new THREE.HemisphereLight(0x9eabc0,0x33261d,.48));
+ scene.add(new THREE.AmbientLight(0xffffff,.10));
  // Dukkan zemini ve duvarlari
  const floor=mat(0x918778),wall=mat(0xc7b99f),green=mat(0x35463f),wood=mat(0x624832),steel=mat(0x89969a,.32,.4);
  addBox(scene,'shop floor',0,-.14,0,12,.28,14,floor);
@@ -173,7 +173,9 @@ function buildWorld(){
  // Giris duvari, vitrin ve tabela
  addBox(scene,'front left wall',-3.55,1.55,5.85,4.9,3.1,.25,wall);addBox(scene,'front right wall',3.55,1.55,5.85,4.9,3.1,.25,wall);addBox(scene,'front lintel',0,3.08,5.85,2.2,.24,.25,wall);
  frontDoor=createDoor('Dükkan kapısı',0,5.72,1.75);addBox(scene,'front sign board',0,4.02,5.61,5.6,.95,.22,mat(0x111a22,.4,.2));addLabel('TANTUNİTEK',0,4.03,5.76,5.35,.78);
- addBox(scene,'left window',-4.85,2.15,5.68,1.35,1.55,.12,mat(0x344e60,.22,.2));addBox(scene,'right window',4.85,2.15,5.68,1.35,1.55,.12,mat(0x344e60,.22,.2));
+ const glass=new THREE.MeshPhysicalMaterial({color:0x9bb8c8,roughness:.12,metalness:.12,transparent:true,opacity:.34,transmission:.72,thickness:.12,ior:1.45,clearcoat:.9,clearcoatRoughness:.08});
+ addBox(scene,'left window frame',-4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'left window glass',-4.85,2.15,5.58,1.3,1.5,.045,glass);
+ addBox(scene,'right window frame',4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'right window glass',4.85,2.15,5.58,1.3,1.5,.045,glass);
  // Dis mekan: kaldirim, asfalt ve isikli cadde
  addBox(scene,'front walkway',0,-.2,10.8,18,.22,10,mat(0x77766f));
  addBox(scene,'sidewalk',0,-.2,16.5,20,.22,3.5,mat(0x77766f));
@@ -188,30 +190,33 @@ function buildWorld(){
  // Tezgah ve arka hazirlik alani
  addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
  addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
- mainLamp=pointLight(0,3.8,-.2,0xffd18a,62,22);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,24,13);pointLight(3.4,3.1,-2.4,0x58cfff,9,10);
- for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,13,8)}
+ mainLamp=pointLight(0,3.8,-.2,0xffd18a,38,18);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,15,10);pointLight(3.4,3.1,-2.4,0x58cfff,4,7);
+ for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,7,6)}
  // Malzeme istasyonlari: stok sinirsiz, her urun ayri alinabilir
- const stationData=[['Ekmek',-3.35,0xd9a75e],['Çiğ tavuk',-2.05,0xb95f3d],['Marul',-.75,0x4c9c4d],['Soğan',.55,0xe5d8c4],['Domates',1.85,0xc83b32],['Patates',3.15,0xd5a64e]];
+ const stationData=[['Ekmek',-3.55,0xd9a75e],['Çiğ tavuk',-2.55,0xb95f3d],['Marul',-1.55,0x4c9c4d],['Soğan',-.55,0xe5d8c4],['Domates',.45,0xc83b32],['Patates',1.45,0xd5a64e],['Ketçap',2.45,0xc52e24],['Mayonez',3.45,0xe9dfc5],['Hardal',4.45,0xd7a52d]];
  for(const [name,x,color] of stationData){
   const root=new THREE.Group();root.position.set(x,1.38,-4.48);
   addBox(root,'ingredient tray',0,0,0,1.08,.1,.82,mat(0x3b4142,.55,.25));
-  const model=createProductModel(THREE,name,color);model.position.set(0,.18,0);root.add(model);
+  const model=['Ketçap','Mayonez','Hardal'].includes(name)?createSauceBottle(THREE,color):createProductModel(THREE,name,color);model.position.set(0,.18,0);root.add(model);
   root.userData.itemName=name;register(root,name,'ingredient');
  }
  // Telefonlar ve kagit
  const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-4.85,1.38,-4.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
- const patrol=createDeskPhone(THREE,mat);patrol.position.set(4.85,1.38,-4.45);patrol.scale.set(.85,.85,.85);register(patrol,'Devriye telefonu','phone');patrolPhone=patrol;
+ const patrol=createDeskPhone(THREE,mat);patrol.position.set(5.48,1.72,-3.65);patrol.rotation.y=Math.PI/2;patrol.scale.set(.82,.82,.82);register(patrol,'Patron telefonu','phone');patrolPhone=patrol;
+ // Arka odada duvar dolaplari ve raflar
+ for(let i=0;i<3;i++){const cab=addBox(scene,'arka oda dolabi',4.75,1.05,-5.05+i*.42,.72,2.05,.42,mat(0x49372a,.68));addBox(scene,'dolap kapagi',4.75,1.05,-4.82+i*.42,.66,1.94,.035,mat(0x715238,.6));addBox(scene,'dolap kolu',5.02,1.05,-4.78+i*.42,.025,.16,.035,mat(0xb6a27e,.35,.55))}
  const paperCanvas=document.createElement('canvas');paperCanvas.width=768;paperCanvas.height=300;const pg=paperCanvas.getContext('2d');pg.fillStyle='#f2e5c9';pg.fillRect(0,0,768,300);pg.fillStyle='#392819';pg.font='bold 42px sans-serif';pg.textAlign='center';pg.fillText('SİPARİŞ FİŞİ',384,65);pg.font='28px sans-serif';pg.fillText('Telefon çalınca sipariş burada görünür',384,160);
  orderTexture=new THREE.CanvasTexture(paperCanvas);const paperMat=new THREE.MeshBasicMaterial({map:orderTexture,side:THREE.DoubleSide});
- orderPaper=new THREE.Mesh(new THREE.PlaneGeometry(1.45,.72),paperMat);orderPaper.position.set(4.5,1.52,-4.48);orderPaper.rotation.y=-.18;orderPaper.userData={name:'Sipariş kağıdı',interactive:true};scene.add(orderPaper);interactables.push(orderPaper);
+ orderPaper=new THREE.Mesh(new THREE.PlaneGeometry(1.45,.72),paperMat);orderPaper.position.set(3.55,1.52,-4.48);orderPaper.rotation.y=-.18;orderPaper.userData={name:'Sipariş kağıdı',interactive:true};scene.add(orderPaper);interactables.push(orderPaper);
  // Hazirlama tahtasi, mangal, fritoz ve cop
  boardGroup=createPrepBoard(THREE,mat);boardGroup.position.set(0,1.39,-3.35);register(boardGroup,'Hazırlama tahtası','board');
  grillGroup=createGrill(THREE,mat);grillGroup.position.set(2.2,1.32,-3.48);register(grillGroup,'Mangal','grill');
  fryerGroup=createFryer(THREE,mat);fryerGroup.position.set(4.25,1.32,-3.48);fryerGroup.visible=false;register(fryerGroup,'Kızartma makinesi','fryer');
+ cutterGroup=createPotatoCutter(THREE,mat);cutterGroup.position.set(3.95,1.32,-2.05);register(cutterGroup,'Patates doğrama makinesi','cutter');
  const bin=createTrashBin(THREE,mat);bin.position.set(5.05,0,-1.45);register(bin,'Çöp kutusu','bin');
  // Paspas ve kirli zemin
- mopGroup=createMopModel(THREE,mat);mopGroup.position.set(5.1,0,2.55);register(mopGroup,'Paspas','mop');
- stain=new THREE.Mesh(new THREE.CircleGeometry(.48,24),mat(0x251b17));stain.rotation.x=-Math.PI/2;stain.position.set(3.55,.015,2.15);stain.userData={name:'Kirli zemin',interactive:true};scene.add(stain);interactables.push(stain);
+ mopGroup=createMopModel(THREE,mat);mopGroup.position.set(4.55,0,-4.15);mopGroup.rotation.y=.45;register(mopGroup,'Paspas','mop');
+ stains=[];for(const [x,z,r] of [[-3.6,1.9,.48],[2.9,2.2,.55],[-1.2,-2.1,.38]]){const dirty=new THREE.Mesh(new THREE.CircleGeometry(r,28),mat(0x17120f,.98));dirty.rotation.x=-Math.PI/2;dirty.position.set(x,.018,z);dirty.userData={name:'Kirli zemin',interactive:true};scene.add(dirty);interactables.push(dirty);stains.push(dirty)}stain=stains[0];
  // Arka cikis kapisi ve dis salter
  backDoor=createDoor('Arka çıkış kapısı',4.05,-5.72,1.8);
  lever=new THREE.Group();lever.position.set(4.15,1.45,-9.35);addBox(lever,'switch plate',0,0,0,.55,.85,.12,mat(0x343d43,.4,.5));const handle=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.16),mat(0xe5b95b,.35,.4));handle.position.set(0,0,.12);lever.add(handle);register(lever,'Dış şalter','switch');
@@ -219,7 +224,14 @@ function buildWorld(){
  addLabel('ELEKTRİK PANOSU',4.15,2.25,-9.42,2.2,.34);
  // Korku icin kucuk oda kapisi ve loş acil aydinlatma
  addBox(scene,'right room partition',5.55,1.55,-2.55,.2,3.1,3.4,mat(0x4c493f));
- const patrolDoor=createDoor('Yan oda kapısı',4.9,-2.45,1.25);patrolDoor.position.x=4.25;patrolDoor.userData.interactive=true;patrolDoor.userData.name='Yan oda kapısı';
+ const patrolDoor=createDoor('Arka oda kapısı',4.9,-2.45,1.25);patrolDoor.position.x=4.25;patrolDoor.userData.interactive=true;patrolDoor.userData.name='Arka oda kapısı';
+ // Disaridaki acik/kapali tabelasi
+ openSign=new THREE.Group();openSign.position.set(0,2.35,7.15);addBox(openSign,'sign board',0,0,0,1.35,.48,.12,mat(0x18251f,.5));const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=180;const signCtx=signCanvas.getContext('2d');signCtx.fillStyle='#1d5c38';signCtx.fillRect(0,0,512,180);signCtx.fillStyle='#fff';signCtx.font='bold 90px sans-serif';signCtx.textAlign='center';signCtx.textBaseline='middle';signCtx.fillText('AÇIK',256,92);const signTexture=new THREE.CanvasTexture(signCanvas);const signFace=new THREE.Mesh(new THREE.PlaneGeometry(1.25,.42),new THREE.MeshBasicMaterial({map:signTexture}));signFace.position.z=.07;openSign.add(signFace);openSign.userData={name:'Açık/Kapalı tabelası',interactive:true,signCtx,signTexture};scene.add(openSign);interactables.push(openSign);
+ // Ayri tuvalet binasi, dort kabin ve lavabo
+ addBox(scene,'bathroom floor',0,-.13,-20,12,.24,9,mat(0x77736d,.82));addBox(scene,'bathroom left wall',-6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom right wall',6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom back wall',0,1.8,-24.5,12,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom ceiling',0,3.65,-20,12,.18,9,mat(0x33363a));
+ bathroomDoor=createDoor('Tuvalet kapısı',0,-15.5,1.8);bathroomDoor.position.x=-.9;
+ for(let i=0;i<4;i++){const x=-4.5+i*3;addBox(scene,'toilet stall divider',x+1.15,1.35,-19.2,.09,2.7,2.3,mat(0x9c9a91));const stall=createDoor('Tuvalet kabini '+(i+1),x,-18.05,1.0);stall.position.x=x-.5;const bowl=new THREE.Mesh(new THREE.CylinderGeometry(.27,.31,.32,20),mat(0xf0eee7,.3));bowl.position.set(x+.5,.18,-20.55);scene.add(bowl);const lid=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,10,24),mat(0xd8d5cd,.3));lid.position.set(x+.5,.36,-20.55);lid.rotation.x=Math.PI/2;scene.add(lid)}
+ const sink=addBox(scene,'bathroom sink',4.75,.88,-16.7,1.05,.16,.55,mat(0xe5e2dc,.25));addBox(scene,'sink pedestal',4.75,.43,-16.7,.18,.75,.18,mat(0xe5e2dc,.28));const tap=addBox(scene,'sink tap',4.75,1.12,-16.9,.08,.28,.08,mat(0x9da8aa,.2,.7));sink.userData={name:'Lavabo',interactive:true};interactables.push(sink);
  emergencyLamp=pointLight(0,3.2,-.1,0xffa24b,0,14);
  flashlight=new THREE.SpotLight(0xffe4b7,0,24,Math.PI/7,.42,1.25);camera.add(flashlight);flashlight.position.set(0,0,0);flashlight.target.position.set(0,0,-1);camera.add(flashlight.target);scene.add(camera);
 }
