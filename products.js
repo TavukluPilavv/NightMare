@@ -6,15 +6,18 @@ export function createProductModel(THREE, name, color) {
     const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(x,y,z);mesh.rotation.set(rx,ry,rz);mesh.scale.set(sx,sy,sz);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);return mesh;
   };
   if(name==='Ekmek'){
-    const left=new THREE.Group(),right=new THREE.Group();
-    const halfA=new THREE.Mesh(new THREE.SphereGeometry(.22,24,16),main);halfA.scale.set(1.25,.58,.82);halfA.position.set(-.13,.07,0);left.add(halfA);
-    const halfB=new THREE.Mesh(new THREE.SphereGeometry(.22,24,16),light);halfB.scale.set(1.25,.58,.82);halfB.position.set(.13,.07,0);right.add(halfB);
-    root.add(left,right);root.userData.openBread=()=>{left.rotation.z=-.62;right.rotation.z=.62;left.position.x=-.08;right.position.x=.08};
-    add(new THREE.BoxGeometry(.38,.025,.16),material(0xf2dcae),0,.015,.02);
+    add(new THREE.SphereGeometry(.27,32,22),main,0,.035,0,0,0,0,1.42,.22,.88);
+    add(new THREE.TorusGeometry(.255,.025,10,36),dark,0,.075,0,Math.PI/2,0,0,1.35,1,.82);
+    const flap=new THREE.Group();flap.position.set(0,.075,-.28);root.add(flap);
+    const top=new THREE.Mesh(new THREE.SphereGeometry(.27,32,20,0,Math.PI*2,0,Math.PI/2),light);top.scale.set(1.42,.30,.88);top.position.set(0,.015,.28);top.castShadow=true;flap.add(top);
+    for(let i=0;i<18;i++){const seed=new THREE.Mesh(new THREE.SphereGeometry(.009,7,5),material(0x9b7040));seed.position.set(Math.sin(i*7.3)*.30,.094,Math.cos(i*4.1)*.19);flap.add(seed)}
+    root.userData.openBread=()=>{flap.rotation.x=-.9;flap.position.z=-.18};
+    root.userData.fillAnchor=new THREE.Vector3(0,.15,.02);
   } else if(name==='Çiğ tavuk'||name==='Pişmiş tavuk'){
-    for(let i=0;i<10;i++){const a=i*2.4;const c=name==='Çiğ tavuk'?(i%2?main:light):(i%3?dark:main);add(new THREE.CapsuleGeometry(.045,.15,3,7),c,Math.sin(a)*.16,.06,Math.cos(a)*.14,Math.random()*.25,a*.2,(i%4-2)*.15)}
-    add(new THREE.BoxGeometry(.48,.035,.42),dark,0,0,0);
-    if(name==='Pişmiş tavuk')for(let i=0;i<4;i++)add(new THREE.BoxGeometry(.025,.012,.18),material(0x5b9b43),-.18+i*.12,.13,.02,0,0,(i-2)*.08);
+    for(let i=0;i<12;i++){const a=i*2.399;add(new THREE.DodecahedronGeometry(.105,1),name==='Çiğ tavuk'?(i%3?main:light):(i%3?dark:main),Math.sin(a)*.16,.065+(i%3)*.012,Math.cos(a)*.14,Math.random()*.3,a*.2,(i%4-2)*.15,1.35,.72,.9)}
+    add(new THREE.BoxGeometry(.48,.025,.42),dark,0,.012,0);
+    if(name==='Pişmiş tavuk'){for(let i=0;i<7;i++)add(new THREE.BoxGeometry(.018,.014,.12),material(0x493021),-.2+i*.065,.14,Math.sin(i)*.12,0,0,(i-3)*.035);for(let i=0;i<5;i++)add(new THREE.SphereGeometry(.018,8,6),material(0x5b9b43),-.18+i*.09,.15,.18)}
+
   } else if(name==='Marul'){
     for(let i=0;i<8;i++){const a=i*Math.PI*2/8;add(new THREE.SphereGeometry(.16,16,12),i%2?main:light,Math.cos(a)*.12,.08,Math.sin(a)*.12,0,0,a*.3,1.2,.32,.78)}
     add(new THREE.CylinderGeometry(.025,.035,.16,8),material(0xe9e1c6),0,.05,0);
