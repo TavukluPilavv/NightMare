@@ -190,7 +190,7 @@ function tapAt(x,y){
 }
 function updateCamera(){camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch}
 function start(){started=true;$('intro').classList.add('hide');sound(440,.15);startShopAmbience();camera.position.set(0,1.68,9.4);yaw=0;updateCamera();objective('Dükkânın kapısından içeri gir.');toast('Vardiya başlamadı. Önce içeri gir.');if(innerWidth>850){renderer.domElement.requestPointerLock?.()} }
-$('start').onclick=()=>{setPlayerName();start()};$('continue').onclick=()=>{$('scare').classList.add('hide');if(customer&&customerStrange){scene.remove(customer);customer=null;toast('Müşteri ortadan kayboldu…')}}; 
+$('start').onclick=()=>{if(!started){setPlayerName();start()}};$('start').addEventListener('pointerup',e=>{if(!started){e.preventDefault();setPlayerName();start()}});$('continue').onclick=()=>{$('scare').classList.add('hide');if(customer&&customerStrange){scene.remove(customer);customer=null;toast('Müşteri ortadan kayboldu…')}}; 
 // Desktop mouse look; click scene to interact.
 renderer.domElement.addEventListener('click',e=>{if(!started)return;if(document.pointerLockElement===renderer.domElement){tapAt(innerWidth/2,innerHeight/2)}else if(innerWidth>850){renderer.domElement.requestPointerLock?.();tapAt(e.clientX,e.clientY)}});
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0022;pitch=Math.max(-1.25,Math.min(1.25,pitch-e.movementY*.0022));updateCamera()}});
