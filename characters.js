@@ -22,7 +22,7 @@ export function createHumanCustomer(THREE, options = {}) {
     const head=add(new THREE.SphereGeometry(.235,12,9),skin,0,1.82,0);head.scale.set(.94,1.08,.96);
     add(new THREE.SphereGeometry(.245,12,8,0,Math.PI*2,0,Math.PI*.55),hair,0,1.9,.012);
     const arms=[],legs=[];
-    for(const x of [-.35,.35]){const pivot=new THREE.Group();pivot.position.set(x,1.38,0);group.add(pivot);const arm=add(new THREE.CapsuleGeometry(.07,.48,3,7),shirt,0,-.29,0,pivot);arms.push(pivot);add(new THREE.SphereGeometry(.07,8,6),skin,0,-.57,-.01,pivot)}
+    for(const x of [-.35,.35]){const pivot=new THREE.Group();pivot.position.set(x,1.38,0);group.add(pivot);const arm=add(new THREE.CapsuleGeometry(.07,.48,3,7),jacket,0,-.29,0,pivot);arms.push(pivot);add(new THREE.SphereGeometry(.07,8,6),skin,0,-.57,-.01,pivot)}
     for(const x of [-.14,.14]){const pivot=new THREE.Group();pivot.position.set(x,.72,0);group.add(pivot);add(new THREE.CapsuleGeometry(.08,.42,3,7),pants,0,-.28,0,pivot);add(new THREE.BoxGeometry(.17,.1,.27),shoe,0,-.59,-.045,pivot);legs.push(pivot)}
     for(const x of [-.085,.085]){const eye=add(new THREE.SphereGeometry(.018,7,5),mat(0x171311),x,1.84,-.218);eye.scale.set(1,.8,.5)}
     group.userData={strange:false,variant,role,arms,legs,walkPhase:Math.random()*6,baseYaw:0,animate:(time,walking=false)=>{const phase=time*8.5+group.userData.walkPhase,swing=walking?Math.sin(phase)*.52:Math.sin(time*1.5)*.025;arms[0].rotation.x=swing;arms[1].rotation.x=-swing;legs[0].rotation.x=-swing*.85;legs[1].rotation.x=swing*.85;group.position.y=walking?Math.abs(Math.sin(phase*2))*.025:0;group.rotation.y=(group.userData.baseYaw||0)+Math.sin(time*.9+variant)*.018}};
@@ -48,10 +48,10 @@ export function createHumanCustomer(THREE, options = {}) {
   const mouth=add(new THREE.CapsuleGeometry(.012,.075,3,8),mat(strange?0x18070b:0x713d37),0,-.105,-.235);mouth.rotation.z=Math.PI/2;head.add(mouth);
   const nose=add(new THREE.SphereGeometry(.035,12,9),skin,0,-.035,-.245);nose.scale.set(.75,.8,.8);head.add(nose);
   for(const x of [-.39,.39]){
-    add(new THREE.SphereGeometry(.13,16,12),shirt,x,1.39,0);
+    add(new THREE.SphereGeometry(.13,16,12),jacket,x,1.39,0);
     const armPivot=new THREE.Group();armPivot.position.set(x,1.38,0);group.add(armPivot);
-    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.078,.54,6,12),shirt);arm.position.set(0,-.31,0);arm.castShadow=true;armPivot.add(arm);arms.push(armPivot);
-    const elbow=new THREE.Mesh(new THREE.SphereGeometry(.078,12,10),shirt);elbow.position.set(0,-.57,0);armPivot.add(elbow);
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.078,.54,6,12),jacket);arm.position.set(0,-.31,0);arm.castShadow=true;armPivot.add(arm);arms.push(armPivot);
+    const elbow=new THREE.Mesh(new THREE.SphereGeometry(.078,12,10),jacket);elbow.position.set(0,-.57,0);armPivot.add(elbow);
     const hand=new THREE.Mesh(new THREE.SphereGeometry(.082,16,12),skin);hand.position.set(0,-.68,-.018);hand.scale.set(.92,1.08,.9);armPivot.add(hand);hands.push(hand);
     for(let finger=0;finger<4;finger++){const digit=new THREE.Mesh(new THREE.CapsuleGeometry(.012,.055,3,6),skin);digit.position.set((finger-1.5)*.027,-.755,-.045);digit.rotation.x=-.22;armPivot.add(digit)}
   }
