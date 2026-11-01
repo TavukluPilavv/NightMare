@@ -1,94 +1,445 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#080d13"><title>TantuniSimulatör</title>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080d13">
+<title>Tantuni Çiçik — Gece Vardiyası</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#18232c;color:#fff;font-family:system-ui,Arial;touch-action:none}canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}#hud{position:fixed;inset:0;z-index:2;pointer-events:none}.top{display:flex;justify-content:space-between;gap:5px;padding:calc(env(safe-area-inset-top) + 8px) 8px 0}.chip{background:#08111cdd;border:1px solid #ffffff35;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:900;text-shadow:0 2px 4px #000}.objective{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:#08111cdd;border:1px solid #ffffff35;border-radius:12px;padding:8px 12px;font-size:12px;text-align:center;max-width:90%;width:max-content}.reticle{position:absolute;left:50%;top:50%;width:9px;height:9px;border:1px solid white;border-radius:50%;transform:translate(-50%,-50%);opacity:.8}.toast{position:absolute;left:50%;bottom:26%;transform:translateX(-50%);background:#101923ed;border:1px solid #ffffff55;border-radius:12px;padding:10px 14px;font-size:13px;text-align:center;max-width:86%;opacity:0;transition:opacity .2s}.toast.show{opacity:1}.joystick{position:absolute;left:18px;bottom:calc(env(safe-area-inset-bottom) + 20px);width:126px;height:126px;border:2px solid #8de7ff;border-radius:50%;background:#12334caa;box-shadow:0 0 22px #21b8ff55;pointer-events:auto;touch-action:none;z-index:5}.stick{position:absolute;width:50px;height:50px;left:36px;top:36px;border-radius:50%;background:linear-gradient(145deg,#e5fbff,#49c8ef);border:2px solid white;box-shadow:0 3px 14px #0009;pointer-events:none}.look{position:absolute;right:0;top:18%;width:48%;height:58%;pointer-events:auto;touch-action:none;z-index:3}.lookhint{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom) + 26px);font-size:10px;color:#fff;text-shadow:0 2px 4px #000}.action{position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom) + 24px);width:112px;height:62px;border:2px solid #ffe4a3;border-radius:17px;background:linear-gradient(145deg,#ffc45b,#e87522);color:#241306;font-weight:1000;font-size:14px;pointer-events:auto;touch-action:manipulation;z-index:6;box-shadow:0 5px 0 #8e411c}.mini{position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom) + 96px);display:flex;flex-direction:column;gap:6px;pointer-events:auto;z-index:6}.mini button,#settings{background:#101d2bed;color:#fff;border:1px solid #ffffff66;border-radius:10px;padding:8px 10px;font-weight:900;font-size:11px;touch-action:manipulation}.mini button{pointer-events:auto}#settings{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 54px);pointer-events:auto}.modal{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:#050a10eF;padding:22px;touch-action:pan-y}.panel{width:min(480px,100%);background:linear-gradient(145deg,#26313c,#101720);border:1px solid #ffffff44;border-radius:22px;padding:24px;box-shadow:0 20px 80px #000}.panel h1{color:#ffc879;margin:0 0 8px}.panel p{line-height:1.5;color:#e4e8ed}.panel button{width:100%;min-height:56px;border:0;border-radius:13px;background:linear-gradient(135deg,#f5a544,#b94b27);color:white;font-size:17px;font-weight:1000;touch-action:manipulation}.hide{display:none!important}.hint{font-size:11px!important;color:#b6c2ce!important}#error{color:#ffb8aa;background:#451d1d;padding:10px;border-radius:10px;display:none}@media(hover:hover) and (pointer:fine) and (min-width:1000px){.joystick,.lookhint{display:none}.look{display:none}}
-</style></head><body>
-<div id="hud"><div class="top"><div class="chip">🌯 TANTUNİSİMULATÖR</div><div class="chip" id="player">👤 Oyuncu</div><div class="chip">GECE <span id="day">1</span></div><div class="chip">₺<span id="money">0</span></div><div class="chip">SİPARİŞ <span id="orders">0</span></div></div><div class="objective" id="objective">Çarşıdasın. TANTUNİTEK dükkânına doğru yürü.</div><div class="reticle"></div><div class="toast" id="toast"></div><div class="joystick" id="joy"><div class="stick" id="stick"></div></div><div class="look" id="look"></div><div class="lookhint">Sağ taraf: etrafa bak</div><button id="settings">⚙</button><button class="action" id="act">AL / ETKİLEŞ</button><div class="mini"><button id="put">KOY</button><button id="trash">ÇÖPE AT</button></div></div>
-<div class="modal" id="intro"><div class="panel"><h1>🌯 TantuniSimulatör</h1><p><b>Gece vardiyası başlıyor…</b><br>Önce karanlık çarşı yolundan TANTUNİTEK tabelalı dükkâna yürü. Kapıyı aç, içeri gir ve vardiyanı başlat.</p><p>Sol joystick ile yürü. Sağ tarafta parmağını sürükleyerek etrafa bak. Hedefe bakıp AL / ETKİLEŞ tuşuna bas.</p><p id="error"></p><button id="start">ÇARŞIYA ÇIK</button><p class="hint">İnternet bağlantısı 3D oyun motorunun yüklenmesi için gereklidir.</p></div></div>
-<div class="modal hide" id="settingsModal"><div class="panel"><h1>Ayarlar</h1><p>Oyuncu adı</p><input id="name" placeholder="Oyuncu" maxlength="18" style="width:100%;padding:12px;border-radius:9px"><p>Joystick boyutu</p><input id="size" type="range" min="100" max="160" value="126" style="width:100%"><button id="save">KAYDET</button><button id="close" style="margin-top:8px;background:#465463">KAPAT</button></div></div>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101923;color:#fff;font-family:system-ui,Arial;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;touch-action:none}
+#hud{position:fixed;inset:0;z-index:2;pointer-events:none}
+.top{display:flex;justify-content:space-between;gap:5px;padding:calc(env(safe-area-inset-top) + 8px) 8px 0}
+.chip{background:#08111cdd;border:1px solid #ffffff35;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:900;text-shadow:0 2px 4px #000}
+.objective{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:#08111cdd;border:1px solid #ffffff35;border-radius:12px;padding:8px 12px;font-size:12px;text-align:center;max-width:90%;width:max-content}
+#orderHud{position:absolute;top:110px;left:50%;transform:translateX(-50%);max-width:88%;background:#352515e8;border:1px solid #ffc87988;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;text-align:center;display:none}
+#heldHud{position:absolute;top:151px;left:50%;transform:translateX(-50%);background:#102638dd;border:1px solid #8de7ff66;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:900;display:none}
+.reticle{position:absolute;left:50%;top:50%;width:9px;height:9px;border:1px solid white;border-radius:50%;transform:translate(-50%,-50%);opacity:.8;box-shadow:0 0 8px #000}
+.toast{position:absolute;left:50%;bottom:27%;transform:translateX(-50%);background:#101923ed;border:1px solid #ffffff55;border-radius:12px;padding:10px 14px;font-size:13px;text-align:center;max-width:86%;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.joystick{position:absolute;left:18px;bottom:calc(env(safe-area-inset-bottom) + 20px);width:126px;height:126px;border:2px solid #8de7ff;border-radius:50%;background:radial-gradient(circle,#17425bce,#081421df);box-shadow:0 0 22px #21b8ff55,inset 0 0 15px #21b8ff33;pointer-events:auto;touch-action:none;z-index:5}
+.stick{position:absolute;width:50px;height:50px;left:36px;top:36px;border-radius:50%;background:linear-gradient(145deg,#e5fbff,#49c8ef);border:2px solid white;box-shadow:0 3px 14px #0009;pointer-events:none}
+.look{position:absolute;right:0;top:18%;width:48%;height:58%;pointer-events:auto;touch-action:none;z-index:3}
+.lookhint{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom) + 26px);font-size:10px;color:#fff;text-shadow:0 2px 4px #000}
+.action{position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom) + 18px);width:118px;height:62px;border:2px solid #ffe4a3;border-radius:17px;background:linear-gradient(145deg,#ffc45b,#e87522);color:#241306;font-weight:1000;font-size:14px;pointer-events:auto;touch-action:manipulation;z-index:7;box-shadow:0 5px 0 #8e411c}
+.action:active{transform:translateY(2px)}
+.rightActions{position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom) + 91px);display:flex;flex-direction:column;gap:5px;pointer-events:auto;z-index:7}
+.rightActions button,#settingsBtn{background:#101d2bed;color:#fff;border:1px solid #ffffff66;border-radius:10px;padding:8px 10px;font-weight:900;font-size:10px;touch-action:manipulation;pointer-events:auto;box-shadow:0 2px 7px #0008}
+#serveBtn{background:#174d37ed;border-color:#8de6b2}
+#settingsBtn{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 54px);z-index:7}
+.modal{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:#050a10ed;padding:22px;touch-action:pan-y}
+.panel{width:min(480px,100%);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#26313c,#101720);border:1px solid #ffffff44;border-radius:22px;padding:24px;box-shadow:0 20px 80px #000}
+.panel h1{color:#ffc879;margin:0 0 8px}
+.panel p{line-height:1.5;color:#e4e8ed}
+.panel button{width:100%;min-height:54px;border:0;border-radius:13px;background:linear-gradient(135deg,#f5a544,#b94b27);color:white;font-size:16px;font-weight:1000;touch-action:manipulation}
+.panel input{width:100%;padding:11px;border-radius:9px;border:1px solid #ffffff55;background:#0b1420;color:white}
+.hide{display:none!important}
+.hint{font-size:11px!important;color:#b6c2ce!important}
+#loadError{color:#ffb8aa;background:#451d1d;padding:10px;border-radius:10px;display:none}
+.blackout{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse at center,#21180b20 0%,#0009 100%)}
+#scare{background:#120008f5;z-index:20}
+#scare .panel{background:#21070e;border-color:#e21c49;text-align:center}
+#scare h1{color:#ff315b;font-size:30px;text-shadow:0 0 18px #f03}
+#scare p{font-weight:800}
+@media(hover:hover) and (pointer:fine) and (min-width:1000px){.joystick,.lookhint{display:none}.look{display:none}}
+@media(max-width:520px){.top{gap:3px;padding-left:5px;padding-right:5px}.chip{font-size:9px;padding:6px 5px}.objective{top:58px;font-size:10px;max-width:94%}#orderHud{top:101px;font-size:9px}#heldHud{top:140px;font-size:9px}.joystick{width:118px;height:118px}.stick{left:32px;top:32px}.rightActions{right:12px}.action{right:12px}.lookhint{right:12px}}
+</style>
+</head>
+<body>
+<div id="hud">
+ <div class="top">
+  <div class="chip">🌯 TANTUNİ ÇİÇİK</div><div class="chip" id="playerHud">👤 Oyuncu</div><div class="chip">GECE <span id="day">1</span></div><div class="chip">₺<span id="money">0</span></div><div class="chip">SİPARİŞ <span id="orders">0</span></div>
+ </div>
+ <div class="objective" id="objective">Çarşıdasın. TANTUNİTEK dükkânına doğru yürü.</div>
+ <div id="orderHud"></div><div id="heldHud"></div><div class="reticle"></div><div class="toast" id="toast"></div>
+ <div class="joystick" id="joy"><div class="stick" id="stick"></div></div><div class="look" id="look"></div><div class="lookhint">Sağ taraf: etrafa bak</div>
+ <button id="settingsBtn">⚙ AYARLAR</button>
+ <div class="rightActions">
+  <button id="putBtn">KOY / TAHTAYA EKLE</button><button id="throwBtn">ÇÖPE AT</button><button id="serveBtn">SİPARİŞİ TESLİM ET</button>
+  <button id="unlockFryerBtn">FRİTÖZÜ AÇ · ₺100</button><button id="unlockRingsBtn">SOĞAN HALKASI · ₺180</button>
+ </div>
+ <button class="action" id="actionBtn">AL / ETKİLEŞ</button>
+</div>
+<div class="blackout" id="blackout"></div>
+<div class="modal" id="intro"><div class="panel">
+ <h1>🌯 Tantuni Çiçik</h1><p><b>Gece Vardiyası</b><br>Önce gece çarşısından TANTUNİTEK tabelalı dükkâna yürü. Kapıyı aç, içeri gir ve siparişleri hazırla. Gece ilerledikçe dükkânın içindeki seslere dikkat et.</p>
+ <p><b>Kontroller</b><br>Telefonda sol joystick ile yürü, sağ tarafta sürükleyerek etrafa bak. AL / ETKİLEŞ ile baktığın hedefi kullan. Bilgisayarda WASD ile yürü, fareyle bak ve E ile etkileş.</p>
+ <p id="loadError"></p><button id="startBtn">ÇARŞIYA ÇIK</button><p class="hint">Android sürümü Three.js motorunu uygulamanın içinden yükler. Tarayıcı sürümünde internet gerekebilir.</p>
+</div></div>
+<div class="modal hide" id="settingsModal"><div class="panel">
+ <h1>⚙ AYARLAR</h1><label>Oyuncu adı</label><input id="playerName" maxlength="18" placeholder="Oyuncu">
+ <p>Joystick boyutu</p><input id="joySize" type="range" min="100" max="160" value="126">
+ <p>Grafik kalitesi</p><select id="quality" style="width:100%;padding:10px;border-radius:9px;background:#0b1420;color:white"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select>
+ <button id="saveSettings" style="margin-top:14px">KAYDET</button><button id="closeSettings" style="margin-top:8px;background:#465463">KAPAT</button>
+</div></div>
+<div class="modal hide" id="scare"><div class="panel"><h1>ARKANDA!</h1><p>Bir anlığına ışıklar söndü. Az önce gördüğün şey hâlâ burada mı?</p><button id="continueScare">GÖZLERİNİ AÇ</button></div></div>
 <script type="module">
+import { createHumanCustomer } from './characters.js';
+import { createDeskPhone, createMopModel, createPrepBoard, createGrill, createTrashBin, createFryer } from './props.js';
+import { createProductModel } from './products.js';
+import { playTone, playDoor, playFryer, playScare, playCustomerVoice, playFootstep, startShopAmbience, startPhoneRing, stopPhoneRing, playPowerCut, playWhisper } from './audio.js';
+
 let THREE;
-try{THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js')}catch(e){try{THREE=await import('https://unpkg.com/three@0.160.0/build/three.module.js')}catch(e2){document.getElementById('error').style.display='block';document.getElementById('error').textContent='3D motor yüklenemedi. İnternet bağlantını kontrol edip sayfayı yenile.';throw e2}}
+try { THREE = await import('./three.module.js'); }
+catch (localError) {
+ try { THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'); }
+ catch (cdnError) {
+  try { THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js'); }
+  catch (finalError) {
+   const el=document.getElementById('loadError');el.style.display='block';el.textContent='3D oyun motoru yüklenemedi. İnternet bağlantını kontrol et ve sayfayı yenile.';
+   throw finalError;
+  }
+ }
+}
 const $=id=>document.getElementById(id);
-let scene,camera,renderer,clock,started=false,yaw=0,pitch=0,moveX=0,moveY=0,blackout=false,shift=false,doorOpen=false,backOpen=false,hasMop=false,held=null,money=0,orders=0,day=1,toastTime=0,elapsed=0;
-const interact=[],cars=[],walkers=[],streetLights=[];let mainLamp,emergencyLamp,flashlight,insideLamp,phone,lever,stain;
-const mat=(c,r=.82,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
-function mesh(geo,material,x,y,z,name='',isInteractive=false){const o=new THREE.Mesh(geo,material);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;o.userData={name,interactive:isInteractive};scene.add(o);if(isInteractive)interact.push(o);return o}
-function box(x,y,z,sx,sy,sz,c,name='',hit=false){return mesh(new THREE.BoxGeometry(sx,sy,sz),mat(c),x,y,z,name,hit)}
-function label(txt,x,y,z,w=4){const c=document.createElement('canvas');c.width=1024;c.height=220;const g=c.getContext('2d');g.fillStyle='#14202a';g.fillRect(0,0,1024,220);g.strokeStyle='#eab85f';g.lineWidth=14;g.strokeRect(8,8,1008,204);g.fillStyle='#ffe0a0';g.font='bold 112px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,512,110);const tex=new THREE.CanvasTexture(c);const s=new THREE.Mesh(new THREE.PlaneGeometry(w,1),new THREE.MeshBasicMaterial({map:tex}));s.position.set(x,y,z);scene.add(s);return s}
-function light(x,y,z,color,intensity,range){const l=new THREE.PointLight(color,intensity,range,1.5);l.position.set(x,y,z);scene.add(l);return l}
-function makeLamp(x,z){box(x,3,z,.13,6,.13,0x303943);box(x+(x<0?.75:-.75),5.85,z,1.5,.12,.14,0x303943);const l=light(x+(x<0?.95:-.95),5.55,z,0xffd58b,42,18);mesh(new THREE.SphereGeometry(.2,12,8),new THREE.MeshBasicMaterial({color:0xffe6ad}),l.position.x,5.55,z);streetLights.push(l)}
-function person(x,z,color){const g=new THREE.Group();const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.23,.72,4,8),mat(color));torso.position.y=1.02;g.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),mat(0xc58c69));head.position.y=1.58;g.add(head);g.position.set(x,0,z);g.userData.dir=x<0?1:-1;scene.add(g);walkers.push(g)}
-function car(x,z,color,dir){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(2.35,.72,1.25),mat(color,.4,.2));body.position.y=.58;g.add(body);const top=new THREE.Mesh(new THREE.BoxGeometry(1.2,.55,1.02),mat(0x52616a,.25,.15));top.position.set(-.1,1.12,0);g.add(top);for(const a of [-.75,.75])for(const b of [-.52,.52]){const wh=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.16,12),mat(0x111111));wh.rotation.z=Math.PI/2;wh.position.set(a,.28,b);g.add(wh)}for(const b of [-.38,.38]){const h=new THREE.PointLight(0xffe5ad,2.5,6);h.position.set(1.2,.65,b);g.add(h)}g.position.set(x,0,z);g.userData.dir=dir;scene.add(g);cars.push(g)}
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x172432);
+scene.fog=new THREE.FogExp2(0x263746,.008);
+const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,150);
+camera.position.set(0,1.68,34);camera.rotation.order='YXZ';
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+let quality='medium';
+function applyQuality(){
+ const ratio=quality==='low'?Math.min(devicePixelRatio,1):quality==='high'?Math.min(devicePixelRatio,1.8):Math.min(devicePixelRatio,1.35);
+ renderer.setPixelRatio(ratio);renderer.setSize(innerWidth,innerHeight);
+ renderer.shadowMap.enabled=quality==='high';renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+}
+renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.28;
+document.body.appendChild(renderer.domElement);applyQuality();
+
+const interactables=[],cars=[],walkers=[],streetLights=[],boardVisuals=[];
+let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,lever,boardGroup,grillGroup,fryerGroup,mopGroup,stain,orderPaper,orderTexture,customer=null;
+let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false;
+let money=0,orders=0,day=1,elapsed=0,toastTimer=0,phoneRinging=false,patrolRinging=false,patrolCallDone=false;
+let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false;
+let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
+let nextPhoneAt=12,nextPowerAt=78,footstepTimer=0,customerTimer=8;
+const clock=new THREE.Clock(),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(0,0);
+let yaw=0,pitch=0,moveX=0,moveY=0,joyId=null,lookId=null,lastLookX=0,lastLookY=0,desktopKeys={};
+
+const mat=(color,roughness=.8,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+function addBox(parent,name,x,y,z,sx,sy,sz,material){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;m.userData.name=name;parent.add(m);return m;
+}
+function addLabel(text,x,y,z,width=3.8,height=.62){
+ const c=document.createElement('canvas');c.width=1024;c.height=180;const g=c.getContext('2d');
+ g.fillStyle='#111c27';g.fillRect(0,0,1024,180);g.strokeStyle='#efbd69';g.lineWidth=10;g.strokeRect(7,7,1010,166);
+ g.fillStyle='#ffe2a8';g.font='bold 106px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,512,92);
+ const tex=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:tex,transparent:false}));
+ m.position.set(x,y,z);scene.add(m);return m;
+}
+function pointLight(x,y,z,color,intensity,distance){
+ const l=new THREE.PointLight(color,intensity,distance,1.45);l.position.set(x,y,z);scene.add(l);return l;
+}
+function register(root,name,type=''){
+ root.userData.name=name;root.userData.interactive=true;if(type)root.userData.type=type;scene.add(root);interactables.push(root);return root;
+}
+function createDoor(name,x,z,width,hingeSide='left'){
+ const root=new THREE.Group();root.position.set(x-width/2,0,z);
+ const panel=new THREE.Mesh(new THREE.BoxGeometry(width,2.8,.16),mat(0x4a3328,.75));panel.position.set(width/2,1.4,0);panel.castShadow=true;root.add(panel);
+ const handle=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),mat(0xd6b16a,.35,.5));handle.position.set(width-.2,1.35,.12);root.add(handle);
+ root.userData.hingeSide=hingeSide;register(root,name,'door');return root;
+}
+function makeStreetLamp(x,z){
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,6,10),mat(0x303a43,.42,.55));pole.position.set(x,3,z);scene.add(pole);
+ const arm=new THREE.Mesh(new THREE.BoxGeometry(.95,.1,.12),mat(0x303a43,.42,.55));arm.position.set(x+(x<0?.42:-.42),5.82,z);scene.add(arm);
+ const lamp=pointLight(x+(x<0?.82:-.82),5.58,z,0xffd58b,38,17);
+ const glow=new THREE.Mesh(new THREE.SphereGeometry(.19,12,8),new THREE.MeshBasicMaterial({color:0xffe6ad}));glow.position.copy(lamp.position);scene.add(glow);
+ streetLights.push({lamp,glow});
+}
+function makePedestrian(x,z,color,variant){
+ const g=createHumanCustomer(THREE,{variant:variant||0,role:'pedestrian'});g.scale.set(.82,.9,.82);g.position.set(x,0,z);g.userData.walkDirection=x<0?1:-1;scene.add(g);walkers.push(g);
+}
+function makeCar(x,z,color,direction){
+ const g=new THREE.Group(),body=mat(color,.42,.18),glass=mat(0x52616b,.25,.2),rubber=mat(0x111315,.8);
+ addBox(g,'car body',0,.58,0,2.35,.72,1.25,body);addBox(g,'car cabin',-.1,1.1,0,1.2,.55,1.02,glass);
+ for(const a of [-.76,.76])for(const b of [-.52,.52]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.16,12),rubber);w.rotation.z=Math.PI/2;w.position.set(a,.28,b);g.add(w)}
+ for(const b of [-.4,.4]){const h=new THREE.PointLight(0xffe6b6,2.2,5);h.position.set(1.18,.62,b);g.add(h)}
+ g.position.set(x,0,z);g.userData.direction=direction;scene.add(g);cars.push(g);
+}
 function buildWorld(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0x273746);scene.fog=new THREE.Fog(0x273746,42,100);
- camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,140);camera.position.set(0,1.68,34);camera.rotation.order='YXZ';
- renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;document.body.appendChild(renderer.domElement);
- scene.add(new THREE.HemisphereLight(0xc9e4ff,0x62503b,1.15));scene.add(new THREE.AmbientLight(0xffffff,.3));
- // Dukkanin zemini ve duvarlari
- box(0,-.16,0,12,.3,14,0x8e8779);box(0,2.3,-6,12,4.6,.25,0xc6b79e);box(-6,2.3,0,.25,4.6,12,0xc6b79e);box(6,2.3,0,.25,4.6,12,0xc6b79e);box(0,4.65,0,12,.2,14,0x30343a);
- // Giris duvarinda kapinin iki yaninda duvar, ortasi acik
- box(-3.55,1.55,5.85,4.9,3.1,.25,0xc6b79e);box(3.55,1.55,5.85,4.9,3.1,.25,0xc6b79e);box(0,3.05,5.85,2.2,.25,.25,0x5b3d2b);
- const frontDoor=box(0,1.45,5.68,1.75,2.85,.16,0x563b2a,'Dükkan kapısı',true);frontDoor.userData.hinge='front';
- // Tabela, vitrin ve isikli dukkan cephesi
- box(0,4.05,5.62,5.4,.9,.22,0x15222b);label('TANTUNİTEK',0,4.05,5.49,5.1);
- box(-4.8,2.2,5.68,1.4,1.55,.12,0x263c49);box(4.8,2.2,5.68,1.4,1.55,.12,0x263c49);
- // Tezgahlar
- box(0,.65,-2.1,5.7,1.3,.9,0x614a35);box(0,1.34,-2.1,5.85,.12,1.05,0xa4a8a7);box(-4.35,.65,-.2,1,1.3,5,0x614a35);box(-4.35,1.34,-.2,1.12,.12,5.1,0xa4a8a7);box(0,.65,-4.65,7.2,1.3,.85,0x614a35);box(0,1.34,-4.65,7.3,.12,.95,0xa4a8a7);
- // Ust aydinlatma
- mainLamp=light(0,3.8,-.4,0xffd18a,70,23);insideLamp=light(-3,3.4,-3,0xffb66a,24,12);light(3,3.2,-2,0x55cfff,12,10);
- // Malzeme tepsileri - gercek 3D objeler
- const foods=[['Ekmek',-3.8,0xd8a45e],['Tavuk',-2.3,0xb45b35],['Marul',-.8,0x4d9c4d],['Soğan',.7,0xe5d8c4],['Domates',2.2,0xc83b32],['Patates',3.8,0xd4a34c]];
- foods.forEach(([n,x,c])=>{box(x,1.48,-4.65,.95,.12,.8,0x383e40);for(let i=0;i<4;i++){const f=mesh(new THREE.SphereGeometry(.18,14,10),mat(c),x+(i%2)*.32-.16,1.72,-4.85+Math.floor(i/2)*.35,n,true);f.scale.set(1,.5,1.25);f.userData.name=n;f.userData.type='food'}});
- box(2.4,.9,-3.2,1.1,1.8,.8,0x89969a,'Mangal',true);box(2.4,1.85,-3.2,1.15,.12,.85,0x292d30);
- box(-2.6,.8,-3.15,.85,1.6,.75,0x4d3526,'Hazırlama tahtası',true);
- box(4.8,.8,-1.5,.85,1.6,.85,0x89969a,'Çöp kutusu',true);
- phone=mesh(new THREE.BoxGeometry(.45,.25,.3),mat(0x202b38),-4.5,1.55,-4.3,'Telefon',true);
- // Arka cikis kapisi, paspas ve disaridaki salter
- box(-2.5,1.5,-5.85,7,3,.25,0xc6b79e);const rear=box(2.4,1.4,-5.72,1.5,2.8,.16,0x493326,'Arka çıkış kapısı',true);rear.userData.hinge='rear';
- box(4.4,.03,2.3,1.1,.07,1.4,0x8b7257,'Paspas',true);box(3.2,.025,1.4,.8,.04,.65,0x211c18,'Kirli zemin',true);
- lever=box(2.4,1.55,-8.5,.35,.55,.2,0xc79b40,'Dış şalter',true);
- box(0,-.2,-9,14,.25,8,0x77736a);box(0,-.25,11,18,.2,9,0x242a30);box(0,-.1,11,18,.05,.12,0xe4d4a0);
- // Gece caddesi ve sokak aydinlatmasi
- box(0,-.2,20,18,.22,27,0x77736a);box(0,-.28,22,36,.16,13,0x242a30);for(let z=15;z<32;z+=4)box(0,-.17,z,14,.025,.1,0xe8d9a2);
- for(const z of [8,16,24,32]){makeLamp(-8,z);makeLamp(8,z)}
- person(-5.7,12,0x315c84);person(5.7,21,0x78523c);person(-5.5,29,0x526c4b);car(-18,18,0x9b3430,1);car(18,24,0x315a86,-1);car(-18,29,0x777777,1);
- // Dis mekanin gorunur sokak binalari
- for(let z of [13,22,31]){box(-11,2.3,z,3,4.6,4,0x303c49);box(11,2.3,z,3,4.6,4,0x35414a);for(let y of [1.8,3]){box(-11,y,z+2.02,1,.8,.05,0x8b9aa0);box(11,y,z+2.02,1,.8,.05,0x8b9aa0)}}
- flashlight=new THREE.SpotLight(0xffe4b7,0,22,Math.PI/6,.45,1.3);camera.add(flashlight);flashlight.position.set(0,0,0);flashlight.target.position.set(0,0,-1);camera.add(flashlight.target);scene.add(camera);emergencyLamp=light(0,3.4,-.4,0xffa24b,0,14);
- clock=new THREE.Clock();
+ scene.add(new THREE.HemisphereLight(0xc9e4ff,0x59412f,1.05));
+ scene.add(new THREE.AmbientLight(0xffffff,.24));
+ // Dukkan zemini ve duvarlari
+ const floor=mat(0x918778),wall=mat(0xc7b99f),green=mat(0x35463f),wood=mat(0x624832),steel=mat(0x89969a,.32,.4);
+ addBox(scene,'shop floor',0,-.14,0,12,.28,14,floor);
+ addBox(scene,'left wall',-6,2.3,0,.24,4.6,12,wall);addBox(scene,'right wall',6,2.3,0,.24,4.6,12,wall);
+ addBox(scene,'back wall left',-1.55,2.3,-6,8.9,4.6,.25,wall);addBox(scene,'back wall right',5.55,2.3,-6,.9,4.6,.25,wall);
+ addBox(scene,'back lintel',4,4.12,-6,2.2,.48,.25,wall);
+ addBox(scene,'left green strip',-5.84,.6,0,.04,1.15,11.8,green);addBox(scene,'right green strip',5.84,.6,0,.04,1.15,11.8,green);
+ addBox(scene,'ceiling',0,4.66,0,12,.2,14,mat(0x292e35));
+ // Giris duvari, vitrin ve tabela
+ addBox(scene,'front left wall',-3.55,1.55,5.85,4.9,3.1,.25,wall);addBox(scene,'front right wall',3.55,1.55,5.85,4.9,3.1,.25,wall);addBox(scene,'front lintel',0,3.08,5.85,2.2,.24,.25,wall);
+ frontDoor=createDoor('Dükkan kapısı',0,5.72,1.75);addBox(scene,'front sign board',0,4.02,5.61,5.6,.95,.22,mat(0x111a22,.4,.2));addLabel('TANTUNİTEK',0,4.03,5.48,5.35,.78);
+ addBox(scene,'left window',-4.85,2.15,5.68,1.35,1.55,.12,mat(0x344e60,.22,.2));addBox(scene,'right window',4.85,2.15,5.68,1.35,1.55,.12,mat(0x344e60,.22,.2));
+ // Dis mekan: kaldirim, asfalt ve isikli cadde
+ addBox(scene,'front walkway',0,-.2,10.8,18,.22,10,mat(0x77766f));
+ addBox(scene,'sidewalk',0,-.2,16.5,20,.22,3.5,mat(0x77766f));
+ addBox(scene,'road',0,-.29,23,38,.18,14,mat(0x242b32));
+ addBox(scene,'far sidewalk',0,-.2,31,20,.22,3.5,mat(0x77766f));
+ for(let z=18;z<29;z+=4)addBox(scene,'road marking',0,-.18,z,14,.025,.12,mat(0xe4d5a1));
+ addBox(scene,'left curb',-10,-.04,23,.18,.25,17,mat(0xbdb7aa));addBox(scene,'right curb',10,-.04,23,.18,.25,17,mat(0xbdb7aa));
+ for(const z of [9,17,25,33]){makeStreetLamp(-8.5,z);makeStreetLamp(8.5,z)}
+ for(const z of [13,23,33]){addBox(scene,'left street building',-12,2.2,z,3.5,4.4,5,mat(0x303e4a));addBox(scene,'right street building',12,2.2,z,3.5,4.4,5,mat(0x35424b));addBox(scene,'left shop window',-12,1.8,z+2.53,1.1,.9,.06,mat(0x82949c,.25));addBox(scene,'right shop window',12,1.8,z+2.53,1.1,.9,.06,mat(0x82949c,.25))}
+ makePedestrian(-6.5,12,0x315c84,1);makePedestrian(6.5,20,0x78523c,3);makePedestrian(-6.5,30,0x526c4b,5);
+ makeCar(-19,19,0x9b3430,1);makeCar(19,23,0x315a86,-1);makeCar(-19,27,0x777777,1);
+ // Tezgah ve arka hazirlik alani
+ addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
+ addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
+ mainLamp=pointLight(0,3.8,-.2,0xffd18a,62,22);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,24,13);pointLight(3.4,3.1,-2.4,0x58cfff,9,10);
+ for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,13,8)}
+ // Malzeme istasyonlari: stok sinirsiz, her urun ayri alinabilir
+ const stationData=[['Ekmek',-3.35,0xd9a75e],['Çiğ tavuk',-2.05,0xb95f3d],['Marul',-.75,0x4c9c4d],['Soğan',.55,0xe5d8c4],['Domates',1.85,0xc83b32],['Patates',3.15,0xd5a64e]];
+ for(const [name,x,color] of stationData){
+  const root=new THREE.Group();root.position.set(x,1.38,-4.48);
+  addBox(root,'ingredient tray',0,0,0,1.08,.1,.82,mat(0x3b4142,.55,.25));
+  const model=createProductModel(THREE,name,color);model.position.set(0,.18,0);root.add(model);
+  root.userData.itemName=name;register(root,name,'ingredient');
+ }
+ // Telefonlar ve kagit
+ const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-4.85,1.38,-4.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
+ const patrol=createDeskPhone(THREE,mat);patrol.position.set(4.85,1.38,-4.45);patrol.scale.set(.85,.85,.85);register(patrol,'Devriye telefonu','phone');patrolPhone=patrol;
+ const paperCanvas=document.createElement('canvas');paperCanvas.width=768;paperCanvas.height=300;const pg=paperCanvas.getContext('2d');pg.fillStyle='#f2e5c9';pg.fillRect(0,0,768,300);pg.fillStyle='#392819';pg.font='bold 42px sans-serif';pg.textAlign='center';pg.fillText('SİPARİŞ FİŞİ',384,65);pg.font='28px sans-serif';pg.fillText('Telefon çalınca sipariş burada görünür',384,160);
+ orderTexture=new THREE.CanvasTexture(paperCanvas);const paperMat=new THREE.MeshBasicMaterial({map:orderTexture,side:THREE.DoubleSide});
+ orderPaper=new THREE.Mesh(new THREE.PlaneGeometry(1.45,.72),paperMat);orderPaper.position.set(4.5,1.52,-4.48);orderPaper.rotation.y=-.18;orderPaper.userData={name:'Sipariş kağıdı',interactive:true};scene.add(orderPaper);interactables.push(orderPaper);
+ // Hazirlama tahtasi, mangal, fritoz ve cop
+ boardGroup=createPrepBoard(THREE,mat);boardGroup.position.set(0,1.39,-3.35);register(boardGroup,'Hazırlama tahtası','board');
+ grillGroup=createGrill(THREE,mat);grillGroup.position.set(2.2,1.32,-3.48);register(grillGroup,'Mangal','grill');
+ fryerGroup=createFryer(THREE,mat);fryerGroup.position.set(4.25,1.32,-3.48);fryerGroup.visible=false;register(fryerGroup,'Kızartma makinesi','fryer');
+ const bin=createTrashBin(THREE,mat);bin.position.set(5.05,0,-1.45);register(bin,'Çöp kutusu','bin');
+ // Paspas ve kirli zemin
+ mopGroup=createMopModel(THREE,mat);mopGroup.position.set(5.1,0,2.55);register(mopGroup,'Paspas','mop');
+ stain=new THREE.Mesh(new THREE.CircleGeometry(.48,24),mat(0x251b17));stain.rotation.x=-Math.PI/2;stain.position.set(3.55,.015,2.15);stain.userData={name:'Kirli zemin',interactive:true};scene.add(stain);interactables.push(stain);
+ // Arka cikis kapisi ve dis salter
+ backDoor=createDoor('Arka çıkış kapısı',4.05,-5.72,1.8);
+ lever=new THREE.Group();lever.position.set(4.15,1.45,-9.35);addBox(lever,'switch plate',0,0,0,.55,.85,.12,mat(0x343d43,.4,.5));const handle=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.16),mat(0xe5b95b,.35,.4));handle.position.set(0,0,.12);lever.add(handle);register(lever,'Dış şalter','switch');
+ addBox(scene,'rear outside ground',0,-.2,-9.6,14,.25,8,mat(0x6f706c));addBox(scene,'rear outside path',0,-.2,-14,14,.25,2.5,mat(0x62645f));
+ addLabel('ELEKTRİK PANOSU',4.15,2.25,-9.42,2.2,.34);
+ // Korku icin kucuk oda kapisi ve loş acil aydinlatma
+ addBox(scene,'right room partition',5.55,1.55,-2.55,.2,3.1,3.4,mat(0x4c493f));
+ const patrolDoor=createDoor('Yan oda kapısı',4.9,-2.45,1.25);patrolDoor.position.x=4.25;patrolDoor.userData.interactive=true;patrolDoor.userData.name='Yan oda kapısı';
+ emergencyLamp=pointLight(0,3.2,-.1,0xffa24b,0,14);
+ flashlight=new THREE.SpotLight(0xffe4b7,0,24,Math.PI/7,.42,1.25);camera.add(flashlight);flashlight.position.set(0,0,0);flashlight.target.position.set(0,0,-1);camera.add(flashlight.target);scene.add(camera);
 }
-function toast(s){$('toast').textContent=s;$('toast').classList.add('show');toastTime=3}
-function objective(s){$('objective').textContent=s}
-function updateLook(){camera.rotation.y=yaw;camera.rotation.x=pitch}
-function start(){if(started)return;started=true;$('intro').classList.add('hide');camera.position.set(0,1.68,34);yaw=0;pitch=0;updateLook();objective('TANTUNİTEK tabelasına doğru yürü.');toast('Çarşıdasın. Dükkâna ulaşmak için ileri yürü!')}
-function rayInteract(){const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(0,0),camera);const hits=ray.intersectObjects(interact,true);if(!hits.length||hits[0].distance>4.5){toast('Biraz yaklaş ve hedefe bak.');return}let o=hits[0].object;while(o&&!o.userData.interactive)o=o.parent;if(!o)return;const n=o.userData.name;
- if(n==='Dükkan kapısı'){doorOpen=!doorOpen;o.rotation.y=doorOpen?-.95:0;toast(doorOpen?'Dükkân kapısı açıldı. İçeri gir!':'Kapıyı kapattın.');return}
- if(n==='Arka çıkış kapısı'){backOpen=!backOpen;o.rotation.y=backOpen?-.95:0;toast(backOpen?'Arka çıkış açıldı. Dışarıdaki şaltere ulaş!':'Arka kapı kapandı.');return}
- if(n==='Dış şalter'){if(blackout){blackout=false;mainLamp.intensity=70;insideLamp.intensity=24;emergencyLamp.intensity=0;flashlight.intensity=0;$('hud').style.filter='none';$('objective').style.color='white';toast('Elektrikler geri geldi!');objective('Vardiyaya devam et.')}else toast('Elektrik şu an açık.');return}
- if(n==='Paspas'){hasMop=true;toast('Paspası aldın.');return}
- if(n==='Kirli zemin'){if(!hasMop){toast('Önce paspası al.');return}o.visible=false;hasMop=false;toast('Yeri paspasladın.');return}
- if(n==='Telefon'){toast('Telefon çalıyor… Sipariş geldi!');objective('Sipariş kâğıdını kontrol et ve malzemeleri hazırla.');orders++;$('orders').textContent=orders;return}
- if(n==='Mangal'){if(held==='Tavuk'){held='Pişmiş tavuk';toast('Tavuk pişti.');}else toast('Önce tavuk al.');return}
- if(n==='Hazırlama tahtası'){if(!held){toast('Önce malzeme al.');return}toast(held+' tahtaya kondu.');held=null;return}
- if(n==='Çöp kutusu'){held=null;toast('Ürün çöpe atıldı.');return}
- if(o.userData.type==='food'){if(held){toast('Elinde zaten ürün var.');return}held=n;toast(n+' aldın. Stok sınırsız!');return}
- toast(n+' ile etkileşime geçtin.');
+function toast(message){$('toast').textContent=message;$('toast').classList.add('show');toastTimer=3.2}
+function objective(message){$('objective').textContent=message}
+function updateLook(){camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch}
+function updateHud(){
+ $('money').textContent=String(money);$('orders').textContent=String(orders);$('day').textContent=String(day);
+ $('heldHud').style.display=heldItem?'block':'none';$('heldHud').textContent=heldItem?'ELİNDE: '+heldItem:'';
+ $('unlockFryerBtn').textContent=fryerUnlocked?'✓ FRİTÖZ AÇILDI':'FRİTÖZÜ AÇ · ₺100';
+ $('unlockRingsBtn').textContent=ringsUnlocked?'✓ SOĞAN HALKASI AÇILDI':'SOĞAN HALKASI · ₺180';
+ $('unlockFryerBtn').disabled=fryerUnlocked;$('unlockRingsBtn').disabled=ringsUnlocked||!fryerUnlocked;
+ $('unlockFryerBtn').style.opacity=fryerUnlocked?'.55':'1';$('unlockRingsBtn').style.opacity=ringsUnlocked?'.55':fryerUnlocked?'1':'.55';
 }
-function powerOut(){if(blackout)return;blackout=true;mainLamp.intensity=0;insideLamp.intensity=0;emergencyLamp.intensity=7;flashlight.intensity=28;$('hud').style.filter='brightness(.82)';objective('ELEKTRİKLER KESİLDİ! Arka çıkış kapısını aç, dışarıdaki şalteri bul.');toast('Elektrikler gitti! El feneri açık. Önünü görebilirsin.')}
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(started){elapsed+=dt;
- const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();camera.position.addScaledVector(v,dt*4.2);camera.position.x=THREE.MathUtils.clamp(camera.position.x,-14,14);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-12,37);camera.position.y=1.68;
- if(!shift&&camera.position.z<5.25){shift=true;objective('Dükkâna girdin. Telefonu aç ve siparişi hazırla.');toast('Vardiyan başladı!');}
- for(const c of cars){c.position.x+=c.userData.dir*dt*5.2;if(c.position.x>21)c.position.x=-21;if(c.position.x< -21)c.position.x=21}
- for(const p of walkers){p.position.x+=p.userData.dir*dt*.48;if(p.position.x>6||p.position.x< -6)p.userData.dir*=-1}
- if(shift&&elapsed>70&&!blackout&&elapsed<74)powerOut();
- if(toastTime>0&&(toastTime-=dt)<=0)$('toast').classList.remove('show');
- }renderer.render(scene,camera)}
-buildWorld();animate();
-$('start').addEventListener('click',start);$('act').addEventListener('click',()=>{if(started)rayInteract()});$('put').addEventListener('click',()=>{if(held){toast(held+' hazırlandı.');held=null}else toast('Önce ürün al.')});$('trash').addEventListener('click',()=>{held=null;toast('Elindeki ürün çöpe atıldı.')});
-$('settings').onclick=()=>{$('settingsModal').classList.remove('hide');$('name').value=$('player').textContent.replace('👤 ','')};$('close').onclick=()=>$('settingsModal').classList.add('hide');$('save').onclick=()=>{const n=$('name').value.trim()||'Oyuncu';$('player').textContent='👤 '+n;const s=Number($('size').value);$('joy').style.width=s+'px';$('joy').style.height=s+'px';$('stick').style.left=(s-50)/2+'px';$('stick').style.top=(s-50)/2+'px';$('settingsModal').classList.add('hide')};
-const joy=$('joy'),stick=$('stick');let joyId=null;function joyMove(e){const r=joy.getBoundingClientRect();let x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=42;if(len>max){x=x/len*max;y=y/len*max}stick.style.transform='translate('+x+'px,'+y+'px)';moveX=x/max;moveY=-y/max}joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});function joyEnd(e){if(e.pointerId!==joyId)return;joyId=null;moveX=moveY=0;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
-let lookId=null,lastX=0,lastY=0;$('look').addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;$('look').setPointerCapture(e.pointerId)});$('look').addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.004;pitch=THREE.MathUtils.clamp(pitch-dy*.004,-1.25,1.25);updateLook()});$('look').addEventListener('pointerup',e=>{if(e.pointerId===lookId)lookId=null});$('look').addEventListener('pointercancel',e=>{if(e.pointerId===lookId)lookId=null});
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='w'||k==='arrowup')moveY=1;if(k==='s'||k==='arrowdown')moveY=-1;if(k==='a')moveX=-1;if(k==='d')moveX=1;if(k==='e')rayInteract()});addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(['w','s','arrowup','arrowdown'].includes(k))moveY=0;if(k==='a'||k==='d')moveX=0});
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-</script></body></html>
+function updateTicket(){
+ const canvas=orderTexture.image,ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f2e5c9';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#392819';ctx.textAlign='center';ctx.font='bold 42px sans-serif';ctx.fillText('MÜŞTERİ SİPARİŞİ',384,58);
+ ctx.font='bold 30px sans-serif';if(currentOrder){const lines=[];for(let i=0;i<currentOrder.items.length;i+=2)lines.push(currentOrder.items.slice(i,i+2).join(' • '));lines.forEach((line,i)=>ctx.fillText(line,384,125+i*45));ctx.font='24px sans-serif';ctx.fillText('Eksikler: '+missingItems().join(', '),384,270)}else{ctx.font='28px sans-serif';ctx.fillText('Henüz sipariş yok',384,170)}
+ orderTexture.needsUpdate=true;
+}
+function missingItems(){return currentOrder?currentOrder.items.filter(item=>!prepItems.includes(item)):[]}
+function updateOrderHud(){
+ const h=$('orderHud');if(!currentOrder){h.style.display='none';h.textContent='';return}
+ h.style.display='block';h.textContent='📋 '+currentOrder.items.join('  •  ')+' | EKSİK: '+missingItems().join(', ');
+ updateTicket();
+}
+function addHeldVisual(name){
+ if(heldVisual)camera.remove(heldVisual);
+ heldItem=name;heldVisual=createProductModel(THREE,name,productColor(name));heldVisual.scale.setScalar(.72);heldVisual.position.set(.42,-.34,-.88);heldVisual.rotation.set(.18,-.25,.1);camera.add(heldVisual);updateHud();
+}
+function productColor(name){
+ const colors={'Ekmek':0xd9a75e,'Çiğ tavuk':0xb95f3d,'Pişmiş tavuk':0x9c5a30,'Marul':0x4c9c4d,'Soğan':0xe5d8c4,'Domates':0xc83b32,'Patates':0xd5a64e,'Patates kızartması':0xe6b94e,'Soğan halkası':0xdca64e};
+ return colors[name]||0xc8a36a;
+}
+function clearHeld(){if(heldVisual){camera.remove(heldVisual);heldVisual=null}heldItem=null;updateHud()}
+function spawnCustomer(){
+ if(customer)return;
+ const chance=Math.min(.12+orders*.055,.72);customerStrange=day>=2&&Math.random()<chance;
+ customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});
+ customer.position.set((Math.random()-.5)*1.4,0,4.1);customer.userData.name='Müşteri';customer.userData.interactive=true;customer.userData.walking=true;scene.add(customer);interactables.push(customer);
+ playCustomerVoice(customerStrange);if(customerStrange){toast('Yeni müşteri geldi… yüzüne dikkat et.');objective('Müşteri normal görünmüyor. Siparişini dinle.')}else{toast('Müşteri geldi. Siparişini al.');objective('Müşteriye bakıp AL / ETKİLEŞ tuşuna bas.')}
+}
+function removeCustomer(){
+ if(!customer)return;scene.remove(customer);const i=interactables.indexOf(customer);if(i>=0)interactables.splice(i,1);customer=null;customerStrange=false;
+}
+function makeOrder(){
+ if(currentOrder){toast('Zaten bekleyen bir sipariş var.');return}
+ const items=['Ekmek','Pişmiş tavuk','Marul','Soğan'];
+ if(Math.random()<.48)items.push('Domates');
+ if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');
+ if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
+ currentOrder={items,createdAt:elapsed};updateOrderHud();toast('Sipariş alındı. Fiş arkadaki kâğıtta güncellendi.');objective('Malzemeleri tek tek al, mangalda pişir ve tahtaya koy.');
+ if(!customer)spawnCustomer();
+}
+function ringPhone(){
+ if(phoneRinging||currentOrder)return;phoneRinging=true;startPhoneRing();toast('Telefon çalıyor! Arka tezgahtaki telefonu aç.');objective('TELEFONU AÇ: Sipariş geliyor.');
+}
+function stopRing(){phoneRinging=false;patrolRinging=false;stopPhoneRing()}
+function putHeldItem(){
+ if(!heldItem){toast('Önce raftan bir ürün al.');return}
+ if(heldItem==='Çiğ tavuk'){toast('Çiğ tavuğu önce mangalda pişir.');return}
+ if(heldItem==='Patates'&&fryerUnlocked){toast('Patatesi kızartma makinesinde pişir.');return}
+ if(heldItem==='Soğan'&&ringsUnlocked){toast('Soğan halkası için soğanı fritözde pişirebilirsin.');return}
+ if(heldItem==='Ekmek'){
+  if(breadOpen){toast('Ekmek zaten tahtada açık.');return}
+  breadOpen=true;prepItems.push('Ekmek');const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));bread.position.set(0,.24,0);bread.scale.set(.95,.8,.95);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();clearHeld();toast('Ekmeği tahtaya koyup açtın.');updateOrderHud();return;
+ }
+ if(!breadOpen){toast('Önce ekmeği tahtaya koyup aç.');return}
+ if(prepItems.includes(heldItem)){toast('Bu malzeme zaten tahtada.');return}
+ const item=heldItem;const visual=createProductModel(THREE,item,productColor(item));const idx=boardVisuals.length;visual.position.set(-.42+(idx%4)*.28,.24,Math.floor(idx/4)*.22-.12);visual.scale.set(.55,.55,.55);boardGroup.add(visual);boardVisuals.push(visual);prepItems.push(item);clearHeld();toast(item+' tahtaya eklendi.');updateOrderHud();
+}
+function clearBoard(){
+ for(const visual of boardVisuals)boardGroup.remove(visual);boardVisuals.length=0;prepItems=[];breadOpen=false;updateOrderHud();
+}
+function startCooking(kind){
+ if(grillCooking||fryerCooking){toast('Makine zaten çalışıyor.');return}
+ if(kind==='grill'){
+  if(heldItem!=='Çiğ tavuk'){toast('Mangalda pişirmek için çiğ tavuk al.');return}
+  clearHeld();grillCooking=true;cookingOutput='Pişmiş tavuk';cookTimer=4.8;playFryer();toast('Tavuk mangalda pişiyor…');objective('Tavuk pişene kadar bekle.');return;
+ }
+ if(!fryerUnlocked){toast('Önce ₺100 ile fritözü aç.');return}
+ if(heldItem==='Patates'){cookingOutput='Patates kızartması'}
+ else if(heldItem==='Soğan'&&ringsUnlocked){cookingOutput='Soğan halkası'}
+ else{toast(ringsUnlocked?'Fritöze patates veya soğan koy.':'Fritöze patates koy.');return}
+ clearHeld();fryerCooking=true;cookTimer=4.2;playFryer();toast(cookingOutput+' hazırlanıyor…');objective('Kızartma hazır olana kadar bekle.');
+}
+function finishCooking(){
+ grillCooking=false;fryerCooking=false;const output=cookingOutput;cookingOutput='';addHeldVisual(output);toast(output+' hazır!');playTone(680,.18);
+}
+function unlockFryer(){
+ if(fryerUnlocked){toast('Fritöz zaten açık.');return}
+ if(money<100){toast('Fritöz için ₺100 gerekiyor. Sipariş teslim et.');return}
+ money-=100;fryerUnlocked=true;fryerGroup.visible=true;updateHud();toast('Fritöz açıldı! Patates kızartması yapabilirsin.');objective('Yeni ürün açıldı: patates kızartması.');
+}
+function unlockRings(){
+ if(ringsUnlocked){toast('Soğan halkası zaten açık.');return}
+ if(!fryerUnlocked){toast('Önce fritözü açmalısın.');return}
+ if(money<180){toast('Soğan halkası için ₺180 gerekiyor.');return}
+ money-=180;ringsUnlocked=true;updateHud();toast('Soğan halkası tarifi açıldı!');objective('Yeni tarif: soğan halkası.');
+}
+function serveOrder(){
+ if(!currentOrder){toast('Teslim edilecek sipariş yok.');return}
+ const missing=missingItems();if(missing.length){toast('Sipariş eksik: '+missing.join(', '));return}
+ if(!breadOpen){toast('Ekmeği tahtada açmalısın.');return}
+ if(!customer){toast('Müşteri henüz gelmedi.');return}
+ const bonus=(currentOrder.items.includes('Patates kızartması')?8:0)+(currentOrder.items.includes('Soğan halkası')?10:0);
+ money+=45+bonus;orders++;toast('Sipariş müşteriye teslim edildi! +₺'+(45+bonus));playTone(760,.2);playDoor();
+ clearBoard();clearHeld();currentOrder=null;updateOrderHud();removeCustomer();updateHud();customerTimer=8;nextPhoneAt=elapsed+18;
+ objective('Sipariş tamamlandı. Yeni müşteriyi bekle.');
+ if(orders===2)toast('İlk kazançlar birikti. Fritöz yükseltmesini açabilirsin.');
+}
+function jumpscare(message){
+ if(scareActive||scareCooldown>0)return;scareActive=true;scareCooldown=35;$('scare').classList.remove('hide');$('scare').querySelector('p').textContent=message||'Karanlığın içinden biri sana çok yaklaştı.';playScare();moveX=moveY=0;
+}
+function powerOut(){
+ if(blackoutActive)return;blackoutActive=true;mainLamp.intensity=0;prepLamp.intensity=0;emergencyLamp.intensity=8;flashlight.intensity=27;$('blackout').style.opacity='.34';playPowerCut();toast('ELEKTRİKLER KESİLDİ! Önünü el feneriyle görebilirsin.');objective('ARKA ÇIKIŞI AÇ, DIŞARIDAKİ ŞALTERİ BUL VE AÇ.');
+}
+function restorePower(){
+ if(!blackoutActive)return;blackoutActive=false;mainLamp.intensity=62;prepLamp.intensity=24;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Yan odadaki devriye telefonu çalıyor…')}
+}
+function interact(target){
+ if(!target)return;const name=target.userData.name,type=target.userData.type;
+ if(type==='ingredient'){if(heldItem){toast('Elinde zaten '+heldItem+' var. Önce tahtaya koy.');return}addHeldVisual(target.userData.itemName);toast(target.userData.itemName+' aldın. Stok sınırsız.');playTone(520,.08);return}
+ if(name==='Dükkan kapısı'){doorOpen=!doorOpen;frontDoor.rotation.y=doorOpen?-1.15:0;toast(doorOpen?'Dükkân kapısı açıldı. İçeri gir!':'Dükkân kapandı.');playDoor();return}
+ if(name==='Arka çıkış kapısı'){backDoorOpen=!backDoorOpen;backDoor.rotation.y=backDoorOpen?-1.15:0;toast(backDoorOpen?'Arka çıkış açıldı. Dışarıdaki şaltere ulaş!':'Arka çıkış kapandı.');playDoor();if(backDoorOpen&&blackoutActive&&Math.random()<.45)jumpscare('Kapının arkasında bir gölge duruyordu.');return}
+ if(name==='Yan oda kapısı'){target.rotation.y=target.rotation.y===0?-.95:0;toast('Yan odadan metalik bir ses geldi…');playWhisper();return}
+ if(type==='switch'){if(blackoutActive)restorePower();else toast('Şalteri kontrol ettin. Elektrikler açık.');return}
+ if(type==='mop'){hasMop=true;scene.remove(mopGroup);const i=interactables.indexOf(mopGroup);if(i>=0)interactables.splice(i,1);toast('Paspası aldın.');return}
+ if(name==='Kirli zemin'){if(!hasMop){toast('Önce paspası almalısın.');return}stain.visible=false;hasMop=false;money+=5;updateHud();toast('Zemini paspasladın. +₺5');playNoiseSafe();return}
+ if(type==='phone'){
+  if(name==='Telefon'){if(phoneRinging){stopRing();makeOrder();}else toast('Telefon sessiz. Birazdan tekrar çalabilir.');return}
+  if(name==='Devriye telefonu'){if(patrolRinging){stopRing();toast('Devriye: Şalteri açtığını gördük. Ama dükkânın arkasında biri dolaşıyor…');objective('Devriye konuşması bitti. Arka kapıyı kontrol et.');playWhisper();if(customerStrange)jumpscare('Telefonun öbür ucundan gelen ses arkandan tekrarlandı.')}else toast('Devriye hattı sessiz.');return}
+ }
+ if(type==='board'){putHeldItem();return}
+ if(type==='grill'){startCooking('grill');return}
+ if(type==='fryer'){startCooking('fryer');return}
+ if(type==='bin'){if(heldItem){clearHeld();toast('Elindeki ürün çöpe atıldı.')}else toast('Çöp kutusu boş.');return}
+ if(name==='Müşteri'){
+  if(customerStrange&&Math.random()<.48){jumpscare('Müşterinin yüzü bir anlığına değişti.');return}
+  if(!currentOrder){makeOrder();toast('Müşteri siparişini verdi.')}
+  else toast('Müşteri siparişinin hazırlanmasını bekliyor.');
+  return;
+ }
+ if(name==='Sipariş kağıdı'){toast(currentOrder?'Sipariş: '+currentOrder.items.join(', '):'Henüz sipariş yok.');return}
+ toast(name+' ile etkileşime geçtin.');
+}
+function rayInteract(){
+ if(!started||scareActive)return;
+ raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(interactables,true);
+ if(!hits.length||hits[0].distance>4.7){toast('Hedefe biraz daha yaklaş ve ortala.');return}
+ let obj=hits[0].object;while(obj&&!obj.userData.interactive)obj=obj.parent;if(!obj)return;interact(obj);
+}
+function updateMovement(dt){
+ const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+ const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+ const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
+ const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.0);
+ camera.position.x=THREE.MathUtils.clamp(camera.position.x,-14,14);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-15.5,37);
+ // Dukkan duvarlari: kapali giris ve arka cikis gecilemez; kapinin acilmasi gerekir.
+ if(!doorOpen&&camera.position.z<6.55&&oldZ>=6.55&&Math.abs(camera.position.x)<2.7)camera.position.z=6.55;
+ if(camera.position.z<6.55&&camera.position.z> -5.4&&Math.abs(camera.position.x)>5.45)camera.position.x=Math.sign(camera.position.x)*5.45;
+ if(camera.position.z< -5.35&&camera.position.z> -6.8&&!(camera.position.x>3.0&&camera.position.x<5.1))camera.position.z=-5.35;
+ if(!backDoorOpen&&camera.position.z< -5.35&&oldZ>=-5.35&&camera.position.x>3&&camera.position.x<5.1)camera.position.z=-5.35;
+ camera.position.y=1.68;updateLook();
+ if(v.lengthSq()>.02){footstepTimer-=dt;if(footstepTimer<=0){playFootstep();footstepTimer=.36}}
+}
+function startGame(){
+ if(started)return;started=true;$('intro').classList.add('hide');camera.position.set(0,1.68,34);yaw=0;pitch=0;updateLook();startShopAmbience();playTone(440,.14);objective('TANTUNİTEK tabelasına yürü. Kapıyı açıp içeri gir.');toast('Çarşıdasın. Joystick ile dükkâna doğru ilerle.');
+}
+function animate(){
+ requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);
+ if(started&&!scareActive){
+  elapsed+=dt;updateMovement(dt);
+  if(!shiftStarted&&camera.position.z<5.3){shiftStarted=true;nextPhoneAt=elapsed+14;objective('Vardiyan başladı. Telefonun çalmasını bekle.');toast('Dükkâna girdin. Gece vardiyası başladı.');}
+  if(shiftStarted){
+   if(elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
+   if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
+   if(elapsed>day*180){day++;$('day').textContent=String(day);toast('GECE '+day+' başladı. Sokak daha da sessizleşti…');if(Math.random()<.5)playWhisper()}
+   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*.48);customer.userData.animate?.(elapsed,true)}
+   if(customer&&customerStrange&&customer.position.z<=1.58&&scareCooldown<=0&&Math.random()<.0015)jumpscare('Müşteri tezgâha geldi ama gözleri sana değil, arkana bakıyor.');
+   if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
+   if(scareCooldown>0)scareCooldown-=dt;
+  }
+  for(const car of cars){car.position.x+=car.userData.direction*dt*5.2;if(car.position.x>21)car.position.x=-21;if(car.position.x< -21)car.position.x=21}
+  for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*.42;if(person.position.x>7||person.position.x< -7)person.userData.walkDirection*=-1;person.userData.animate?.(elapsed,true)}
+  if(blackoutActive&&Math.random()<.025){mainLamp.intensity=Math.random()*2}
+  if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');
+ }
+ renderer.render(scene,camera);
+}
+function playNoiseSafe(){playTone(180,.08,'triangle',.03)}
+function setupControls(){
+ $('startBtn').addEventListener('pointerdown',e=>{e.preventDefault();startGame()},{passive:false});
+ $('startBtn').addEventListener('click',startGame);
+ $('actionBtn').addEventListener('click',rayInteract);
+ $('putBtn').addEventListener('click',putHeldItem);
+ $('throwBtn').addEventListener('click',()=>{if(heldItem){clearHeld();toast('Ürün çöpe atıldı.')}else toast('Elinde ürün yok.')});
+ $('serveBtn').addEventListener('click',serveOrder);
+ $('unlockFryerBtn').addEventListener('click',unlockFryer);$('unlockRingsBtn').addEventListener('click',unlockRings);
+ $('continueScare').addEventListener('click',()=>{$('scare').classList.add('hide');scareActive=false;if(customerStrange){removeCustomer();toast('Müşteri ortadan kayboldu…')}});
+ $('settingsBtn').addEventListener('click',()=>{$('playerName').value=$('playerHud').textContent.replace('👤 ','');$('settingsModal').classList.remove('hide')});
+ $('closeSettings').addEventListener('click',()=>$('settingsModal').classList.add('hide'));
+ $('saveSettings').addEventListener('click',()=>{const name=$('playerName').value.trim()||'Oyuncu';$('playerHud').textContent='👤 '+name;quality=$('quality').value;const size=Number($('joySize').value);$('joy').style.width=size+'px';$('joy').style.height=size+'px';$('stick').style.left=((size-50)/2)+'px';$('stick').style.top=((size-50)/2)+'px';applyQuality();$('settingsModal').classList.add('hide');toast('Ayarlar kaydedildi.')});
+ const joy=$('joy'),stick=$('stick');function joyMove(e){const r=joy.getBoundingClientRect();let x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=Math.max(32,r.width*.34);if(len>max){x=x/len*max;y=y/len*max}stick.style.transform='translate('+x+'px,'+y+'px)';moveX=x/max;moveY=-y/max}
+ joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)},{passive:false});
+ joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});
+ function joyEnd(e){if(e.pointerId!==joyId)return;joyId=null;moveX=moveY=0;stick.style.transform='translate(0,0)'}
+ joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);joy.addEventListener('lostpointercapture',()=>{joyId=null;moveX=moveY=0;stick.style.transform='translate(0,0)'});
+ const look=$('look');look.addEventListener('pointerdown',e=>{e.preventDefault();lookId=e.pointerId;lastLookX=e.clientX;lastLookY=e.clientY;look.setPointerCapture(e.pointerId)},{passive:false});
+ look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;const dx=e.clientX-lastLookX,dy=e.clientY-lastLookY;lastLookX=e.clientX;lastLookY=e.clientY;yaw-=dx*.0042;pitch=THREE.MathUtils.clamp(pitch-dy*.0042,-1.15,1.15);updateLook()});
+ const lookEnd=e=>{if(e.pointerId===lookId)lookId=null};look.addEventListener('pointerup',lookEnd);look.addEventListener('pointercancel',lookEnd);
+ addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='w'||k==='arrowup')moveY=1;if(k==='s'||k==='arrowdown')moveY=-1;if(k==='a'||k==='arrowleft')moveX=-1;if(k==='d'||k==='arrowright')moveX=1;if(k==='e'||k===' ')rayInteract()});
+ addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(['w','s','arrowup','arrowdown'].includes(k))moveY=0;if(['a','d','arrowleft','arrowright'].includes(k))moveX=0});
+ renderer.domElement.addEventListener('click',()=>{if(started&&innerWidth>900&&!document.pointerLockElement)renderer.domElement.requestPointerLock?.()});
+ document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0022;pitch=THREE.MathUtils.clamp(pitch-e.movementY*.0022,-1.15,1.15);updateLook()}});
+ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+}
+try{
+ buildWorld();setupControls();updateHud();updateTicket();clock.start();animate();
+}catch(error){
+ const el=$('loadError');el.style.display='block';el.textContent='Oyun başlatılamadı: '+(error?.message||error);console.error(error);
+}
+</script>
+</body>
+</html>

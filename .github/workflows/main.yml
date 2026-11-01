@@ -44,6 +44,7 @@ jobs:
         run: |
           mkdir -p www
           cp index.html characters.js audio.js props.js products.js www/
+          cp node_modules/three/build/three.module.js www/three.module.js
 
       - name: Add Android platform
         run: npx cap add android

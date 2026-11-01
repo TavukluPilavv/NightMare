@@ -1,22 +1,23 @@
 # Tantuni Çiçik — Gece Vardiyası
 
-Mobil tarayıcıda oynanabilen, korku temalı küçük bir tantuni dükkânı yönetme oyunu.
+Mobil ve masaüstü tarayıcıda oynanabilen birinci şahıs 3D tantuni dükkânı / korku prototipi.
 
-## Nasıl çalıştırılır?
-- `index.html` dosyasını tarayıcıda aç.
-- GitHub Pages ile yayınlamak için: **Settings → Pages → Deploy from a branch → main → /(root) → Save**.
-- Yayınlandıktan sonra Pages adresinden telefonda oynayabilirsin.
+## Çalıştırma
+- GitHub Pages: **Settings → Pages → Deploy from a branch → main → /(root)**.
+- Tarayıcıda Three.js yerel dosyası yoksa CDN yedeği kullanılır; bu durumda internet gerekir.
+- Android APK iş akışı Three.js dosyasını uygulamanın içine kopyalar.
 
 ## Kontroller
-- Telefon: ekrandaki yön tuşları, **AL / KOY**, **HAZIRLA / SAT**.
-- Bilgisayar: WASD veya ok tuşlarıyla yürü, **E** ile al/koy, **Space / Enter** ile sipariş sat.
-- **İPUCU** sıradaki adımı hatırlatır.
+- Telefon: sol joystick ile yürü, sağ tarafta sürükleyerek bak, **AL / ETKİLEŞ** ile baktığın hedefi kullan.
+- Bilgisayar: **WASD / oklar** ile yürü, fareyle bak, **E** ile etkileş.
+- Malzemeleri raftan tek tek al, çiğ tavuğu mangalda pişir, ekmeği tahtaya koyup aç, diğer malzemeleri ekle ve siparişi teslim et.
+- Fritöz ₺100, soğan halkası tarifi ₺180 karşılığında açılır.
 
-## İlk sürümde
-- Dükkânda dolaşma ve malzeme alma/bırakma
-- Ekmek, tavuk, marul, soğan ve patates
-- Müşteri siparişi ve para sayacı
-- Korkutucu müşteri sürprizi ve Web Audio ile üretilen ses efektleri
-- Kazançla açılan kızartma makinesi için temel yükseltme
+## İçerik
+- Gece çarşısı, sokak lambaları, hareketli arabalar ve yayalar
+- Açılıp kapanan dükkân / arka çıkış kapıları
+- 3D insan, ürün, telefon, mangal, fritöz ve paspas modelleri
+- Sipariş telefonu, fiş, sınırsız malzeme, para ve yükseltme sistemi
+- Elektrik kesintisi, el feneri, devriye telefonu, sesler ve jumpscare olayları
 
-Bu prototipin sonraki sürümlerinde gerçek tarif hazırlama aşamaları, stok sistemi, farklı müşteri tipleri, daha gelişmiş animasyonlar, müzik ve kayıt sistemi eklenebilir.
+Bu sürüm bir prototiptir; mobil cihazlarda gerçek cihaz testi yapılmadan tüm performans ve dokunmatik davranışlar garanti edilmez.
