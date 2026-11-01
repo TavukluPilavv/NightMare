@@ -209,7 +209,7 @@ function buildWorld(){
   root.userData.itemName=name;register(root,name,'ingredient');
  }
  // Telefonlar ve kagit
- const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-2.95,1.38,-4.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
+ const deskPhone=createDeskPhone(THREE,mat);deskPhone.position.set(-2.55,1.38,-.45);register(deskPhone,'Telefon','phone');phone=deskPhone;
  const patrol=createDeskPhone(THREE,mat);patrol.position.set(5.48,1.72,-3.65);patrol.rotation.y=Math.PI/2;patrol.scale.set(.82,.82,.82);register(patrol,'Patron telefonu','phone');patrolPhone=patrol;
  // Arka odada duvar dolaplari ve raflar
  for(let i=0;i<3;i++){const cab=addBox(scene,'arka oda dolabi',4.75,1.05,-5.05+i*.42,.72,2.05,.42,mat(0x49372a,.68));addBox(scene,'dolap kapagi',4.75,1.05,-4.82+i*.42,.66,1.94,.035,mat(0x715238,.6));addBox(scene,'dolap kolu',5.02,1.05,-4.78+i*.42,.025,.16,.035,mat(0xb6a27e,.35,.55))}
