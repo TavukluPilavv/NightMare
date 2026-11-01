@@ -10,14 +10,17 @@ Mobil ve masaüstü tarayıcıda oynanabilen birinci şahıs 3D tantuni dükkân
 ## Kontroller
 - Telefon: sol joystick ile yürü, sağ tarafta sürükleyerek bak, **AL / ETKİLEŞ** ile baktığın hedefi kullan.
 - Bilgisayar: **WASD / oklar** ile yürü, fareyle bak, **E** ile etkileş.
-- Malzemeleri raftan tek tek al, çiğ tavuğu mangalda pişir, ekmeği tahtada aç ve marul, soğan, domates ile pişmiş tavuğu ekmeğin içine yerleştirerek siparişi tamamla.
+- Malzemeleri tek tek al; tavukları mangalda pişir, patatesi doğrama makinesinde kesip fritözde kızart. Bir, iki veya üç tavuk tantuniyi ayrı ekmeklere hazırla; marul, ikili soğan/domates dilimleri ve ketçap, mayonez, hardal ekle.
 - Fritöz ₺100, soğan halkası tarifi ₺180 karşılığında açılır.
 
 ## İçerik
 - Gece çarşısı, sokak lambaları, hareketli arabalar ve yayalar
 - Açılıp kapanan dükkân / arka çıkış kapıları
-- 3D insan, ürün, telefon, mangal, fritöz ve paspas modelleri
+- Göz kırpma, yüz ifadesi ve yürüyüş animasyonları olan 3D müşteriler; susamlı ekmek ve detaylı malzemeler
+- Arka oda dolapları, duvara monte patron telefonu, paspas ve dört kabinli ayrı tuvalet
 - Sipariş telefonu, fiş, sınırsız malzeme, para ve yükseltme sistemi
-- Elektrik kesintisinde oyuncunun önünde kısa süre beliren karanlık siluet, el feneri, devriye telefonu, nadir jumpscare olayları
+- Elektrik kesintisinde karanlık atmosfer, el feneri ve nadir jumpscare olayları
+- Müşteri konuşmaları, kapı zili, adım, alma/koyma, doğrama ve temizlik sesleri
+- Vardiya sonunda patron araması, kirleri temizleme, tabelayı KAPALI yapma ve yeni güne çarşıda başlama
 
 Bu sürüm bir prototiptir; mobil cihazlarda gerçek cihaz testi yapılmadan tüm performans ve dokunmatik davranışlar garanti edilmez.
