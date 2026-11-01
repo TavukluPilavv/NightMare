@@ -6,12 +6,13 @@ export function createProductModel(THREE, name, color) {
     const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(x,y,z);mesh.rotation.set(rx,ry,rz);mesh.scale.set(sx,sy,sz);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);return mesh;
   };
   if(name==='Ekmek'){
-    add(new THREE.SphereGeometry(.27,32,22),main,0,.035,0,0,0,0,1.42,.22,.88);
-    add(new THREE.TorusGeometry(.255,.025,10,36),dark,0,.075,0,Math.PI/2,0,0,1.35,1,.82);
-    const flap=new THREE.Group();flap.position.set(0,.075,-.28);root.add(flap);
-    const top=new THREE.Mesh(new THREE.SphereGeometry(.27,32,20,0,Math.PI*2,0,Math.PI/2),light);top.scale.set(1.42,.30,.88);top.position.set(0,.015,.28);top.castShadow=true;flap.add(top);
-    for(let i=0;i<18;i++){const seed=new THREE.Mesh(new THREE.SphereGeometry(.009,7,5),material(0x9b7040));seed.position.set(Math.sin(i*7.3)*.30,.094,Math.cos(i*4.1)*.19);flap.add(seed)}
-    root.userData.openBread=()=>{flap.rotation.x=-.9;flap.position.z=-.18};
+    add(new THREE.SphereGeometry(.29,36,24),main,0,.035,0,0,0,0,1.48,.23,.9);
+    add(new THREE.TorusGeometry(.265,.022,10,44),dark,0,.075,0,Math.PI/2,0,0,1.42,1,.84);
+    const topGroup=new THREE.Group();topGroup.position.set(0,.075,-.29);root.add(topGroup);
+    const top=new THREE.Mesh(new THREE.SphereGeometry(.29,36,24,0,Math.PI*2,0,Math.PI/2),light);top.scale.set(1.48,.32,.9);top.position.set(0,.015,.29);top.castShadow=true;topGroup.add(top);
+    const sesame=material(0xf2e2b6,.58);
+    for(let i=0;i<58;i++){const angle=i*2.399,rad=.06+Math.sqrt(i/58)*.245;const seed=new THREE.Mesh(new THREE.SphereGeometry(.008,7,5),sesame);seed.position.set(Math.cos(angle)*rad,.095,Math.sin(angle)*rad*.75);seed.rotation.z=Math.sin(angle)*.5;topGroup.add(seed)}
+    root.userData.openBread=()=>{topGroup.rotation.x=-.82;topGroup.position.z=-.18};
     root.userData.fillAnchor=new THREE.Vector3(0,.15,.02);
   } else if(name==='Çiğ tavuk'||name==='Pişmiş tavuk'){
     for(let i=0;i<12;i++){const a=i*2.399;add(new THREE.DodecahedronGeometry(.105,1),name==='Çiğ tavuk'?(i%3?main:light):(i%3?dark:main),Math.sin(a)*.16,.065+(i%3)*.012,Math.cos(a)*.14,Math.random()*.3,a*.2,(i%4-2)*.15,1.35,.72,.9)}
@@ -23,11 +24,11 @@ export function createProductModel(THREE, name, color) {
     add(new THREE.CylinderGeometry(.035,.055,.18,12),material(0xe9e1c6),0,.045,0);
     for(let i=0;i<7;i++)add(new THREE.BoxGeometry(.012,.008,.22),material(0x8acb68),Math.cos(i)*.05,.105,Math.sin(i)*.05,0,i*.45,0);
   } else if(name==='Soğan'){
-    for(let layer=0;layer<4;layer++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.16-layer*.022,.018,12,36),layer%2?light:main);ring.position.set((layer-1.5)*.045,.075,0);ring.rotation.x=Math.PI/2;ring.rotation.z=layer*.12;ring.scale.set(1,.82,1);ring.castShadow=true;root.add(ring)}
+    for(let pair=0;pair<2;pair++){const center=(pair-.5)*.18;for(let layer=0;layer<3;layer++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.105-layer*.018,.016,12,32),layer%2?light:main);ring.position.set(center+(layer-1)*.012,.075,0);ring.rotation.x=Math.PI/2;ring.scale.set(1,.9,1);ring.castShadow=true;root.add(ring)}}
     add(new THREE.SphereGeometry(.045,16,12),light,0,.05,0,0,0,0,1,.65,1);
   } else if(name==='Domates'){
-    const sliceMat=material(0xd84a37,.48),skinMat=material(0xa92e25,.55),seedMat=material(0xf3d7a2,.62);
-    for(let i=0;i<3;i++){const slice=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.045,32),sliceMat);slice.position.set((i-1)*.13,.075+(i%2)*.025,0);slice.rotation.x=Math.PI/2;slice.castShadow=true;root.add(slice);const skin=new THREE.Mesh(new THREE.TorusGeometry(.15,.012,8,32),skinMat);skin.position.copy(slice.position);skin.rotation.copy(slice.rotation);root.add(skin);for(let j=0;j<6;j++){const seed=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),seedMat);seed.position.set(slice.position.x+Math.cos(j*Math.PI/3)*.075,.10+(i%2)*.025,Math.sin(j*Math.PI/3)*.075);root.add(seed)}}
+    const sliceMat=material(0xd84a37,.42),skinMat=material(0xa92e25,.5),seedMat=material(0xf3d7a2,.6);
+    for(let pair=0;pair<2;pair++){const center=(pair-.5)*.19;const slice=new THREE.Mesh(new THREE.CylinderGeometry(.135,.135,.045,36),sliceMat);slice.position.set(center,.075,0);slice.rotation.x=Math.PI/2;slice.castShadow=true;root.add(slice);const skin=new THREE.Mesh(new THREE.TorusGeometry(.12,.012,10,36),skinMat);skin.position.copy(slice.position);skin.rotation.copy(slice.rotation);root.add(skin);for(let j=0;j<8;j++){const seed=new THREE.Mesh(new THREE.SphereGeometry(.009,8,6),seedMat);seed.position.set(center+Math.cos(j*Math.PI/4)*.06,.10,Math.sin(j*Math.PI/4)*.06);root.add(seed)}}
   } else if(name==='Patates'){
     const skin=material(0xb88a50,.92),eye=material(0x725033,.98);
     for(let i=0;i<3;i++){const tuber=new THREE.Mesh(new THREE.SphereGeometry(.17,24,18),i%2?main:skin);tuber.position.set((i-1)*.18,.08,Math.sin(i*2)*.08);tuber.scale.set(1.35,.72,.82);tuber.rotation.z=(i-1)*.2;tuber.castShadow=true;tuber.receiveShadow=true;root.add(tuber);for(let j=0;j<4;j++){const spot=new THREE.Mesh(new THREE.SphereGeometry(.012,7,5),eye);spot.position.set(tuber.position.x+Math.sin(j*3.2)*.13,.08+Math.cos(j*2.4)*.055,tuber.position.z+Math.cos(j*3.2)*.09);root.add(spot)}}
