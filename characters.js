@@ -11,6 +11,19 @@ export function createHumanCustomer(THREE, options = {}) {
   const hair=mat(strange?0x050508:hairColors[variant%hairColors.length]);
   const shoe=mat(0x17191c,.72), eyeWhite=mat(0xf2eee7,.3), iris=mat(strange?0x9e101c:0x493326,.28), pupil=mat(0x09090b,.18), brow=mat(strange?0x080609:0x30221c);
   const add=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;group.add(o);return o};
+  const add=(geo,m,x,y,z,parent=group)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
+  if(role==="pedestrian"){
+    const skin=mat(skins[variant%skins.length]),shirt=mat(shirts[variant%shirts.length]),pants=mat([0x20242a,0x34302c,0x303b4b,0x4a3831][variant%4]),hair=mat(hairColors[variant%hairColors.length]),shoe=mat(0x17191c,.72);
+    const torso=add(new THREE.CapsuleGeometry(.27,.58,4,8),shirt,0,1.12,0);torso.scale.set(1,.96,.72);
+    const head=add(new THREE.SphereGeometry(.235,12,9),skin,0,1.82,0);head.scale.set(.94,1.08,.96);
+    add(new THREE.SphereGeometry(.245,12,8,0,Math.PI*2,0,Math.PI*.55),hair,0,1.9,.012);
+    const arms=[],legs=[];
+    for(const x of [-.35,.35]){const pivot=new THREE.Group();pivot.position.set(x,1.38,0);group.add(pivot);const arm=add(new THREE.CapsuleGeometry(.07,.48,3,7),shirt,0,-.29,0,pivot);arms.push(pivot);add(new THREE.SphereGeometry(.07,8,6),skin,0,-.57,-.01,pivot)}
+    for(const x of [-.14,.14]){const pivot=new THREE.Group();pivot.position.set(x,.72,0);group.add(pivot);add(new THREE.CapsuleGeometry(.08,.42,3,7),pants,0,-.28,0,pivot);add(new THREE.BoxGeometry(.17,.1,.27),shoe,0,-.59,-.045,pivot);legs.push(pivot)}
+    for(const x of [-.085,.085]){const eye=add(new THREE.SphereGeometry(.018,7,5),mat(0x171311),x,1.84,-.218);eye.scale.set(1,.8,.5)}
+    group.userData={strange:false,variant,role,arms,legs,walkPhase:Math.random()*6,baseYaw:0,animate:(time,walking=false)=>{const phase=time*8.5+group.userData.walkPhase,swing=walking?Math.sin(phase)*.52:Math.sin(time*1.5)*.025;arms[0].rotation.x=swing;arms[1].rotation.x=-swing;legs[0].rotation.x=-swing*.85;legs[1].rotation.x=swing*.85;group.position.y=walking?Math.abs(Math.sin(phase*2))*.025:0;group.rotation.y=(group.userData.baseYaw||0)+Math.sin(time*.9+variant)*.018}};
+    return group;
+  }
   const torso=add(new THREE.CapsuleGeometry(.29+(variant%3)*.025,.56+(variant%2)*.1,6,16),shirt,0,1.13,0);torso.scale.set(1,.98,.72);
   const neck=add(new THREE.CylinderGeometry(.095,.12,.18,14),skin,0,1.64,0);
   const head=new THREE.Group();head.position.set(0,1.83,0);group.add(head);
