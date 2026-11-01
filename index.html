@@ -214,13 +214,18 @@ function makeCar(x,z,color,direction){
   addBox(g,'door seam',-.12,.72,side*.674,.012,.42,.012,mat(0x25282a,.7));
  }
  addBox(g,'front bumper',1.29,.38,0,.14,.2,1.38,chrome);addBox(g,'rear bumper',-1.29,.38,0,.14,.2,1.38,chrome);addBox(g,'front grille',1.305,.67,0,.025,.22,.48,mat(0x15191d,.65,.2));
+ addBox(g,'front registration plate',1.375,.43,0,.025,.12,.42,mat(0xe9e9df,.52));addBox(g,'rear registration plate',-1.375,.43,0,.025,.12,.42,mat(0xe9e9df,.52));
+ addBox(g,'front lower air intake',1.315,.49,0,.03,.09,.58,mat(0x101416,.72));
  const headlamp=new THREE.MeshStandardMaterial({color:0xffedc5,emissive:0xffc66d,emissiveIntensity:1.35,roughness:.24});
  const tailLamp=new THREE.MeshStandardMaterial({color:0xa32925,emissive:0x8c100b,emissiveIntensity:.75,roughness:.3});
  for(const side of [-.48,.48]){addBox(g,'headlight',1.305,.76,side,.04,.19,.25,headlamp);addBox(g,'tail light',-1.31,.72,side,.04,.2,.23,tailLamp)}
  for(const a of [-.78,.78])for(const b of [-.56,.56]){
   const w=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.18,24),rubber);w.rotation.x=Math.PI/2;w.position.set(a,.31,b);w.castShadow=true;g.add(w);
-  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.19,20),chrome);hub.rotation.x=Math.PI/2;hub.position.copy(w.position);g.add(hub);
+  const tireSidewall=new THREE.Mesh(new THREE.TorusGeometry(.19,.055,10,28),rubber);tireSidewall.position.copy(w.position);g.add(tireSidewall);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.19,24),chrome);hub.rotation.x=Math.PI/2;hub.position.copy(w.position);g.add(hub);
+  const rimLip=new THREE.Mesh(new THREE.TorusGeometry(.115,.012,8,24),chrome);rimLip.position.set(a,.31,b+(b>0?.096:-.096));g.add(rimLip);
   const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.2,16),mat(0x30383c,.28,.7));cap.rotation.x=Math.PI/2;cap.position.copy(w.position);g.add(cap);
+  for(let bolt=0;bolt<5;bolt++){const angle=bolt*Math.PI*2/5,stud=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),mat(0xd2d5d3,.3,.75));stud.position.set(a+Math.cos(angle)*.078,.31+Math.sin(angle)*.078,b+(b>0?.105:-.105));g.add(stud)}
  }
  g.position.set(x,0,z);g.rotation.y=direction>0?-Math.PI/2:Math.PI/2;g.userData.direction=direction;
  g.userData.wheels=[];for(const wheel of g.children){if(wheel.geometry?.type==='CylinderGeometry'&&wheel.position.y<.4)g.userData.wheels.push(wheel)}
