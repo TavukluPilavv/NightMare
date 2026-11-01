@@ -184,7 +184,7 @@ function buildWorld(){
  for(let z=18;z<29;z+=4)addBox(scene,'road marking',0,-.18,z,14,.025,.12,mat(0xe4d5a1));
  addBox(scene,'left curb',-10,-.04,23,.18,.25,17,mat(0xbdb7aa));addBox(scene,'right curb',10,-.04,23,.18,.25,17,mat(0xbdb7aa));
  for(const z of [9,17,25,33]){makeStreetLamp(-8.5,z);makeStreetLamp(8.5,z)}
- for(const z of [13,23,33]){addBox(scene,'left street building',-12,2.2,z,3.5,4.4,5,mat(0x303e4a));addBox(scene,'right street building',12,2.2,z,3.5,4.4,5,mat(0x35424b));addBox(scene,'left shop window',-12,1.8,z+2.53,1.1,.9,.06,mat(0x82949c,.25));addBox(scene,'right shop window',12,1.8,z+2.53,1.1,.9,.06,mat(0x82949c,.25))}
+ for(const z of [13,23,33]){addBox(scene,'left street building',-12,2.2,z,3.5,4.4,5,mat(0x303e4a));addBox(scene,'right street building',12,2.2,z,3.5,4.4,5,mat(0x35424b));addBox(scene,'left shop window',-12,1.8,z+2.53,1.1,.9,.06,glass);addBox(scene,'right shop window',12,1.8,z+2.53,1.1,.9,.06,glass)}
  makePedestrian(-6.5,12,0x315c84,1);makePedestrian(6.5,20,0x78523c,3);makePedestrian(-6.5,30,0x526c4b,5);
  makeCar(-19,19,0x9b3430,1);makeCar(19,23,0x315a86,-1);makeCar(-19,27,0x777777,1);
  // Tezgah ve arka hazirlik alani
@@ -279,6 +279,7 @@ function removeCustomer(){
 }
 function makeOrder(){
  if(currentOrder){toast('Zaten bekleyen bir sipariş var.');return}
+ if(breadOpen)clearBoard();
  const items=['Ekmek','Pişmiş tavuk','Marul','Soğan'];
  if(Math.random()<.68)items.push('Domates');if(Math.random()<.34)items.push('Ketçap');if(Math.random()<.28)items.push('Mayonez');if(Math.random()<.18)items.push('Hardal');
  if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
@@ -296,7 +297,7 @@ function putHeldItem(){
  if(heldItem==='Patates'){toast('Önce patates doğrama makinesini kullan.');return}
  if(heldItem==='Doğranmış patates'&&fryerUnlocked){toast('Doğranmış patatesi fritözde kızart.');return}
  if(heldItem==='Ekmek'){
-  if(breadOpen&&prepItems.filter(value=>value==='Ekmek').length>=currentOrder.count){toast('İstenen ekmeklerin hepsi hazır.');return}
+  if(breadOpen&&currentOrder&&prepItems.filter(value=>value==='Ekmek').length>=currentOrder.count){toast('İstenen ekmeklerin hepsi hazır.');return}
   breadOpen=true;const total=currentOrder?.count||1;for(let i=0;i<total;i++){const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));bread.position.set((i-(total-1)/2)*.48,.24,0);bread.scale.set(.48,.48,.58);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();breadVisuals.push(bread);if(!breadVisual)breadVisual=bread;prepItems.push('Ekmek')}clearHeld();toast(total+' ekmeği tahtaya koyup açtın.');playPlace();updateOrderHud();return;
  }
  if(!breadOpen){toast('Önce ekmeği tahtaya koyup aç.');return}
