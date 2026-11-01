@@ -26,7 +26,23 @@
 <div class="modal hide" id="scare"><div class="panel"><h1>!!! ARKANA BAKMA !!!</h1><p>Kapının önündeki şey artık dükkânın içinde.</p><button id="continue">GÖZLERİNİ AÇ</button></div></div>
 <div class="modal hide" id="settingsModal"><div class="panel"><h1>⚙ OYUN AYARLARI</h1><p>Oyuncu bilgilerini ve grafik performansını ayarla.</p><label for="playerName">Oyuncunun adı</label><input id="playerName" maxlength="18" placeholder="Oyuncu adını yaz"><div class="settingRow"><label for="graphics">Grafik kalitesi</label><select id="graphics"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option></select></div><div class="settingRow"><label for="shadows">Gölgeler</label><input id="shadows" type="checkbox" checked></div><div class="settingRow"><label for="joySize">Joystick boyutu</label><input id="joySize" type="range" min="90" max="160" value="124"></div><p class="small">Düşük grafik daha akıcı, yüksek grafik daha ayrıntılı görünür.</p><button id="saveSettings">KAYDET</button> <button id="closeSettings" style="background:#394858">KAPAT</button></div></div>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+let THREE;
+try {
+ THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+} catch (firstError) {
+ try {
+  THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+ } catch (secondError) {
+  const panel=document.querySelector('#intro .panel');
+  if(panel){
+   const error=document.createElement('p');
+   error.style.cssText='color:#ffb4a8;font-weight:800;background:#401b1b;padding:10px;border-radius:10px';
+   error.textContent='Oyun motoru yüklenemedi. İnternet bağlantını kontrol et ve sayfayı yenile.';
+   panel.appendChild(error);
+  }
+  throw secondError;
+ }
+}
 import { createHumanCustomer } from './characters.js';
 import { createDeskPhone, createMopModel, createPrepBoard, createGrill, createTrashBin, createSauceBottle } from './props.js';
 import { createProductModel } from './products.js';
