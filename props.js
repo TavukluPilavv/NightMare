@@ -55,10 +55,15 @@ export function createTrashBin(THREE, mat) {
  const hole=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.012,20),mat(0x090d10));hole.position.y=.902;g.add(hole);return g;
 }
 export function createSauceBottle(THREE,color) {
- const g=new THREE.Group(),plastic=new THREE.MeshStandardMaterial({color,roughness:.28});
- const bottle=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.48,20),plastic);bottle.position.y=.25;bottle.castShadow=true;g.add(bottle);
- const neck=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,.12,16),plastic);neck.position.y=.55;g.add(neck);
- const cap=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.07,16),new THREE.MeshStandardMaterial({color:0x252525}));cap.position.y=.645;g.add(cap);return g;
+ const g=new THREE.Group(),plastic=new THREE.MeshStandardMaterial({color,roughness:.3}),capMat=new THREE.MeshStandardMaterial({color:0x252525,roughness:.38});
+ const bottle=new THREE.Mesh(new THREE.CylinderGeometry(.13,.16,.48,24),plastic);bottle.position.y=.25;bottle.castShadow=true;g.add(bottle);
+ const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.13,20,12),plastic);shoulder.scale.set(1,.48,1);shoulder.position.y=.49;g.add(shoulder);
+ const neck=new THREE.Mesh(new THREE.CylinderGeometry(.052,.075,.13,18),plastic);neck.position.y=.57;g.add(neck);
+ const collar=new THREE.Mesh(new THREE.CylinderGeometry(.078,.078,.035,18),capMat);collar.position.y=.65;g.add(collar);
+ const nozzle=new THREE.Mesh(new THREE.ConeGeometry(.052,.15,18),plastic);nozzle.position.y=.742;g.add(nozzle);
+ const opening=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.018,10),capMat);opening.position.y=.825;g.add(opening);
+ const label=new THREE.Mesh(new THREE.PlaneGeometry(.2,.16),new THREE.MeshStandardMaterial({color:0xf3ead7,roughness:.55}));label.position.set(0,.27,.132);g.add(label);
+ return g;
 }
 export function createPotatoCutter(THREE, mat) {
  const g=new THREE.Group(),steel=mat(0x9aa4a6,.28,.72),dark=mat(0x252d31,.5,.5),handleMat=mat(0x6b7478,.32,.65);
