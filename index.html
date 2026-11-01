@@ -163,7 +163,7 @@ function makeStreetLamp(x,z){
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,6,10),mat(0x303a43,.42,.55));pole.position.set(x,3,z);scene.add(pole);
  const arm=new THREE.Mesh(new THREE.BoxGeometry(.95,.1,.12),mat(0x303a43,.42,.55));arm.position.set(x+(x<0?.42:-.42),5.82,z);scene.add(arm);
  const base=new THREE.Mesh(new THREE.CylinderGeometry(.2,.24,.22,12),mat(0x252d33,.5,.45));base.position.set(x,.11,z);scene.add(base);
- const headX=x+(x<0?.82:-.82),lamp=pointLight(headX,5.42,z,0xffc77b,17,14);
+ const headX=x+(x<0?.82:-.82),lamp=pointLight(headX,5.42,z,0xffc77b,quality==='low'?0:17,14);
  const housing=new THREE.Mesh(new THREE.BoxGeometry(.62,.16,.3),mat(0x252d33,.38,.5));housing.position.set(headX,5.55,z);scene.add(housing);
  const glow=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),new THREE.MeshBasicMaterial({color:0xffe6ad}));glow.position.copy(lamp.position);scene.add(glow);
  streetLights.push({lamp,glow});
@@ -221,13 +221,13 @@ function buildWorld(){
    
   }
  }
- makePedestrian(-10.5,12,0x315c84,1);makePedestrian(10.5,20,0x78523c,3);makePedestrian(-10.5,30,0x526c4b,5);makePedestrian(10.5,15,0x7b536d,2);makePedestrian(-10.5,26,0x8b7651,4);makePedestrian(10.5,34,0x526a78,6);
- makeCar(-27,19,0x9b3430,1);makeCar(27,23,0x315a86,-1);makeCar(-27,27,0x777777,1);makeCar(27,17,0x3d6950,-1);makeCar(-27,31,0x9a7a38,1);
+ makePedestrian(-10.5,12,0x315c84,1);makePedestrian(10.5,20,0x78523c,3);makePedestrian(-10.5,30,0x526c4b,5);if(quality!=='low'){makePedestrian(10.5,15,0x7b536d,2);makePedestrian(-10.5,26,0x8b7651,4);makePedestrian(10.5,34,0x526a78,6)}
+ makeCar(-27,19,0x9b3430,1);makeCar(27,23,0x315a86,-1);makeCar(-27,27,0x777777,1);if(quality!=='low'){makeCar(27,17,0x3d6950,-1);makeCar(-27,31,0x9a7a38,1)}
  // Tezgah ve arka hazirlik alani
  addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
  addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
- mainLamp=pointLight(0,3.8,-.2,0xffd18a,38,18);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,15,10);pointLight(3.4,3.1,-2.4,0x58cfff,4,7);
- for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,7,6)}
+ mainLamp=pointLight(0,3.8,-.2,0xffd18a,quality==='low'?24:38,18);prepLamp=pointLight(-2.8,3.45,-3.9,0xffb66a,quality==='low'?8:15,10);pointLight(3.4,3.1,-2.4,0x58cfff,quality==='low'?0:4,7);
+ for(const x of [-3.6,0,3.6]){addBox(scene,'pendant cable',x,4.05,-.5,.025,.8,.025,mat(0x20252b));const shade=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,.18,18),mat(0xe5b35d,.45));shade.position.set(x,3.58,-.5);scene.add(shade);pointLight(x,3.42,-.5,0xffd89b,quality==='low'?1.5:7,6)}
  // Malzeme istasyonlari: stok sinirsiz, her urun ayri alinabilir
  const stationData=[['Ekmek',-3.3,0xd9a75e],['Çiğ tavuk',-2.475,0xb95f3d],['Marul',-1.65,0x4c9c4d],['Soğan',-.825,0xe5d8c4],['Domates',0,0xc83b32],['Patates',.825,0xd5a64e],['Ketçap',1.65,0xc52e24],['Mayonez',2.475,0xe9dfc5],['Hardal',3.3,0xd7a52d]];
  for(const [name,x,color] of stationData){
@@ -435,7 +435,7 @@ function startNextDay(){
  day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;backRoomDoorOpen=false;bathroomDoorOpen=false;customerLeaving=false;courierLeaving=false;blackoutActive=false;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';removeBlackoutFigure();grillCooking=false;fryerCooking=false;cookTimer=0;cookingOutput='';frontDoor.rotation.y=0;backDoor.rotation.y=0;backRoomDoor.rotation.y=0;bathroomDoor.rotation.y=0;patrolCallDone=false;currentOrder=null;
  stains.forEach(d=>d.visible=false);hasMop=false;mopGroup.visible=true;patrolRinging=false;phoneRinging=false;stopPhoneRing();
  openSign.userData.signCtx.fillStyle='#1d5c38';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('AÇIK',256,92);openSign.userData.signTexture.needsUpdate=true;
- mainLamp.intensity=38;prepLamp.intensity=15;streetLights.forEach(({lamp})=>lamp.intensity=38);
+ mainLamp.intensity=quality==='low'?24:38;prepLamp.intensity=quality==='low'?8:15;streetLights.forEach(({lamp})=>lamp.intensity=quality==='low'?0:17);
  camera.position.set(0,2.05,34);yaw=0;pitch=0;updateLook();removeCustomer();clearBoard();clearHeld();updateOrderHud();
  shiftStartElapsed=elapsed;nextPhoneAt=elapsed+18;nextPowerAt=elapsed+72;removeCourier();removeCustomer();objective('GÜN '+day+': Çarşıdan dükkâna git ve kapıyı aç.');toast('Yeni gün başladı. Çarşı yeniden hareketleniyor.');playDoorBell();
 }
@@ -455,7 +455,7 @@ function powerOut(){
  if(blackoutActive)return;blackoutActive=true;mainLamp.intensity=0;prepLamp.intensity=0;emergencyLamp.intensity=8;flashlight.intensity=27;$('blackout').style.opacity='.34';removeBlackoutFigure();playPowerCut();toast('ELEKTRİKLER KESİLDİ! El fenerini aç ve dışarıdaki şalter panosuna git.');objective('Arka çıkıştan dışarı çık. Şalter kapağını aç ve anahtarı kaldır.');
 }
 function restorePower(){
- if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=38;prepLamp.intensity=15;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Arka odadaki patron telefonu çalıyor…')}
+ if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=quality==='low'?24:38;prepLamp.intensity=quality==='low'?8:15;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Arka odadaki patron telefonu çalıyor…')}
 }
 function interact(target){
  if(!target)return;const name=target.userData.name,type=target.userData.type;
