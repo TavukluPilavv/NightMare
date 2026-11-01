@@ -111,7 +111,7 @@ document.body.appendChild(renderer.domElement);applyQuality();
 
 const interactables=[],cars=[],walkers=[],streetLights=[],boardVisuals=[];
 let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,lever,boardGroup,grillGroup,fryerGroup,cutterGroup,mopGroup,stain,orderPaper,orderTexture,customer=null,openSign,bathroomDoor;
-let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
+let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,breadVisuals=[],apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
 let money=0,orders=0,day=1,elapsed=0,toastTimer=0,phoneRinging=false,patrolRinging=false,patrolCallDone=false;
 let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false;
 let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
@@ -216,7 +216,7 @@ function buildWorld(){
  const bin=createTrashBin(THREE,mat);bin.position.set(5.05,0,-1.45);register(bin,'Çöp kutusu','bin');
  // Paspas ve kirli zemin
  mopGroup=createMopModel(THREE,mat);mopGroup.position.set(4.55,0,-4.15);mopGroup.rotation.y=.45;register(mopGroup,'Paspas','mop');
- stains=[];for(const [x,z,r] of [[-3.6,1.9,.48],[2.9,2.2,.55],[-1.2,-2.1,.38]]){const dirty=new THREE.Mesh(new THREE.CircleGeometry(r,28),mat(0x17120f,.98));dirty.rotation.x=-Math.PI/2;dirty.position.set(x,.018,z);dirty.userData={name:'Kirli zemin',interactive:true};scene.add(dirty);interactables.push(dirty);stains.push(dirty)}stain=stains[0];
+ stains=[];for(const [x,z,r] of [[-3.6,1.9,.48],[2.9,2.2,.55],[-1.2,-2.1,.38]]){const dirty=new THREE.Mesh(new THREE.CircleGeometry(r,28),mat(0x17120f,.98));dirty.rotation.x=-Math.PI/2;dirty.position.set(x,.018,z);dirty.userData={name:'Kirli zemin',interactive:true};scene.add(dirty);interactables.push(dirty);stains.push(dirty);dirty.visible=false}stain=stains[0];
  // Arka cikis kapisi ve dis salter
  backDoor=createDoor('Arka çıkış kapısı',4.05,-5.72,1.8);
  lever=new THREE.Group();lever.position.set(4.15,1.45,-9.35);addBox(lever,'switch plate',0,0,0,.55,.85,.12,mat(0x343d43,.4,.5));const handle=new THREE.Mesh(new THREE.BoxGeometry(.12,.48,.16),mat(0xe5b95b,.35,.4));handle.position.set(0,0,.12);lever.add(handle);register(lever,'Dış şalter','switch');
@@ -251,7 +251,7 @@ function updateTicket(){
  ctx.font='bold 28px sans-serif';if(currentOrder){ctx.fillText(currentOrder.count+' ADET TAVUK TANTUNİ',384,104);const lines=[];for(let i=0;i<currentOrder.items.length;i+=2)lines.push(currentOrder.items.slice(i,i+2).join(' • '));lines.forEach((line,i)=>ctx.fillText(line,384,148+i*38));ctx.font='22px sans-serif';ctx.fillText('Eksikler: '+missingItems().join(', '),384,275)}else{ctx.font='28px sans-serif';ctx.fillText('Henüz sipariş yok',384,170)}
  orderTexture.needsUpdate=true;
 }
-function missingItems(){return currentOrder?currentOrder.items.filter(item=>!prepItems.includes(item)):[]}
+function missingItems(){if(!currentOrder)return[];return currentOrder.items.filter(item=>prepItems.filter(value=>value===item).length<currentOrder.count).map(item=>item+' x'+(currentOrder.count-prepItems.filter(value=>value===item).length))}
 function updateOrderHud(){
  const h=$('orderHud');if(!currentOrder){h.style.display='none';h.textContent='';updateTicket();return}
  h.style.display='block';h.textContent='📋 '+currentOrder.count+' TANTUNİ · '+currentOrder.items.join('  •  ')+' | EKSİK: '+missingItems().join(', ');
@@ -296,15 +296,14 @@ function putHeldItem(){
  if(heldItem==='Patates'){toast('Önce patates doğrama makinesini kullan.');return}
  if(heldItem==='Doğranmış patates'&&fryerUnlocked){toast('Doğranmış patatesi fritözde kızart.');return}
  if(heldItem==='Ekmek'){
-  if(breadOpen){toast('Ekmek zaten tahtada açık.');return}
-  breadOpen=true;prepItems.push('Ekmek');const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));bread.position.set(0,.24,0);bread.scale.set(.95,.8,.95);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();breadVisual=bread;clearHeld();toast('Ekmeği tahtaya koyup içini açtın.');updateOrderHud();return;
+  if(breadOpen&&prepItems.filter(value=>value==='Ekmek').length>=currentOrder.count){toast('İstenen ekmeklerin hepsi hazır.');return}
+  breadOpen=true;const total=currentOrder?.count||1;for(let i=0;i<total;i++){const bread=createProductModel(THREE,'Ekmek',productColor('Ekmek'));bread.position.set((i-(total-1)/2)*.48,.24,0);bread.scale.set(.48,.48,.58);boardGroup.add(bread);boardVisuals.push(bread);bread.userData.openBread?.();breadVisuals.push(bread);if(!breadVisual)breadVisual=bread;prepItems.push('Ekmek')}clearHeld();toast(total+' ekmeği tahtaya koyup açtın.');playPlace();updateOrderHud();return;
  }
  if(!breadOpen){toast('Önce ekmeği tahtaya koyup aç.');return}
- if(prepItems.includes(heldItem)){toast('Bu malzeme zaten tahtada.');return}
- const item=heldItem;const visual=createProductModel(THREE,item,productColor(item));const idx=prepItems.filter(value=>value!=='Ekmek').length;visual.position.set(-.22+(idx%3)*.22,.19+Math.floor(idx/3)*.035,-.12+Math.floor(idx/3)*.18);visual.scale.set(.34,.34,.34);breadVisual.add(visual);boardVisuals.push(visual);prepItems.push(item);clearHeld();playPlace();toast(item+' ekmeğin içine eklendi.');updateOrderHud();
+ const item=heldItem;const total=currentOrder?.count||1;const already=prepItems.filter(value=>value===item).length;if(already>=total){toast(item+' tüm tantunilere eklendi.');return}if(breadVisuals.length<total){toast('Önce '+total+' ekmeği de tahtaya koy.');return}for(let i=0;i<total;i++){const visual=createProductModel(THREE,item,productColor(item));visual.position.set(0,.19+(i%2)*.015,0);visual.scale.set(.27,.27,.27);breadVisuals[i].add(visual);boardVisuals.push(visual);prepItems.push(item)}clearHeld();playPlace();toast(item+' '+total+' ekmeğin içine eklendi.');updateOrderHud();
 }
 function clearBoard(){
- for(const visual of boardVisuals)visual.parent?.remove(visual);boardVisuals.length=0;prepItems=[];breadOpen=false;breadVisual=null;updateOrderHud();
+ for(const visual of boardVisuals)visual.parent?.remove(visual);boardVisuals.length=0;prepItems=[];breadOpen=false;breadVisual=null;breadVisuals=[];updateOrderHud();
 }
 function startCooking(kind){
  if(grillCooking||fryerCooking){toast('Makine zaten çalışıyor.');return}
@@ -344,6 +343,19 @@ function serveOrder(){
  objective('Sipariş tamamlandı. Yeni müşteriyi bekle.');
  if(orders===2)toast('İlk kazançlar birikti. Fritöz yükseltmesini açabilirsin.');
 }
+function beginClosingShift(){
+ shiftClosing=true;bossCallDone=false;stains.forEach(d=>{d.visible=true});patrolRinging=true;startPhoneRing();
+ mainLamp.intensity=20;prepLamp.intensity=7;streetLights.forEach(({lamp})=>lamp.intensity=lamp.intensity*.55);
+ toast('Gün bitti. Patron arıyor…');objective('Arka odaya git ve patronun telefonunu aç.');playWhisper();
+}
+function startNextDay(){
+ day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;frontDoor.rotation.y=0;backDoor.rotation.y=0;
+ stains.forEach(d=>d.visible=false);hasMop=false;mopGroup.visible=true;patrolRinging=false;phoneRinging=false;stopPhoneRing();
+ openSign.userData.signCtx.fillStyle='#1d5c38';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('AÇIK',256,92);openSign.userData.signTexture.needsUpdate=true;
+ mainLamp.intensity=38;prepLamp.intensity=15;streetLights.forEach(({lamp})=>lamp.intensity=38);
+ camera.position.set(0,2.05,34);yaw=0;pitch=0;updateLook();removeCustomer();clearBoard();clearHeld();
+ shiftStartElapsed=elapsed;nextPhoneAt=elapsed+18;nextPowerAt=elapsed+72;objective('GÜN '+day+': Çarşıdan dükkâna git ve kapıyı aç.');toast('Yeni gün başladı. Çarşı yeniden hareketleniyor.');playDoorBell();
+}
 function jumpscare(message){
  if(scareActive||scareCooldown>0)return;scareActive=true;scareCooldown=35;$('scare').classList.remove('hide');$('scare').querySelector('p').textContent=message||'Karanlığın içinden biri sana çok yaklaştı.';playScare();moveX=moveY=0;
 }
@@ -360,7 +372,7 @@ function powerOut(){
  if(blackoutActive)return;blackoutActive=true;mainLamp.intensity=0;prepLamp.intensity=0;emergencyLamp.intensity=8;flashlight.intensity=27;$('blackout').style.opacity='.34';spawnBlackoutFigure();playPowerCut();toast('ELEKTRİKLER KESİLDİ! Önünde bir siluet belirdi…');objective('ÖNÜNDEKİ SİLUETE DİKKAT ET. Sonra arka çıkıştan şalteri bul.');
 }
 function restorePower(){
- if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=62;prepLamp.intensity=24;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Yan odadaki devriye telefonu çalıyor…')}
+ if(!blackoutActive)return;blackoutActive=false;removeBlackoutFigure();mainLamp.intensity=62;prepLamp.intensity=24;emergencyLamp.intensity=0;flashlight.intensity=0;$('blackout').style.opacity='0';toast('Elektrikler geri geldi.');objective('Vardiyaya devam et. Telefonu kontrol et.');playTone(360,.25);if(!patrolCallDone){patrolCallDone=true;patrolRinging=true;startPhoneRing();toast('Arka odadaki patron telefonu çalıyor…')}
 }
 function interact(target){
  if(!target)return;const name=target.userData.name,type=target.userData.type;
@@ -374,7 +386,7 @@ function interact(target){
  if(name==='Arka çıkış kapısı'){backDoorOpen=!backDoorOpen;backDoor.rotation.y=backDoorOpen?-1.15:0;toast(backDoorOpen?'Arka çıkış açıldı. Dışarıdaki şaltere ulaş!':'Arka çıkış kapandı.');playDoor();if(backDoorOpen&&blackoutActive&&Math.random()<.45)jumpscare('Kapının arkasında bir gölge duruyordu.');return}
  if(name==='Yan oda kapısı'){target.rotation.y=target.rotation.y===0?-.95:0;toast('Yan odadan metalik bir ses geldi…');playWhisper();return}
  if(type==='switch'){if(blackoutActive)restorePower();else toast('Şalteri kontrol ettin. Elektrikler açık.');return}
- if(type==='mop'){hasMop=true;toast('Arka odadan paspası aldın.');playPickup();return}
+ if(type==='mop'){hasMop=true;mopGroup.visible=false;toast('Arka odadan paspası aldın.');playPickup();return}
  if(name==='Kirli zemin'){if(!hasMop){toast('Paspas arka odada. Önce onu al.');return}target.visible=false;money+=5;updateHud();playWash();toast('Zemini temizledin. +₺5');if(shiftClosing&&!stains.some(d=>d.visible))objective('Bütün lekeler temiz. Şimdi kapı önündeki tabelayı KAPALI yap.');return}
  if(type==='cutter'){if(heldItem!=='Patates'){toast('Doğrama makinesi için önce patates al.');return}cutterGroup.userData.activate?.();addHeldVisual('Doğranmış patates');playChop();toast('Patates doğrandı. Şimdi fritöze koy.');return}
  if(type==='phone'){
@@ -430,7 +442,7 @@ function animate(){
    if(elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
    if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
    if(shiftStarted&&!shiftClosing&&elapsed-shiftStartElapsed>=180){beginClosingShift()}
-   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*.72);customer.userData.animate?.(elapsed,true)}
+   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*.72);customer.userData.animate?.(elapsed,true)}else if(customer){customer.userData.animate?.(elapsed,false)}
    if(customer&&customerStrange&&customer.position.z<=1.58&&scareCooldown<=0&&Math.random()<.00022)jumpscare('Müşteri tezgâha geldi ama gözleri sana değil, arkana bakıyor.');
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
