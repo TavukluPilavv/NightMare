@@ -51,23 +51,26 @@ export function createProductModel(THREE, name, color) {
 
   } else if(name==='Marul'){
     const leafMat=material(0x659d43,.94),lightLeaf=material(0x83b653,.92),vein=material(0xb5ce82,.92);
-    // Gerçek marul yaprakları: geniş, ince, kenarları kıvrımlı ve kat kat.
-    for(let i=0;i<10;i++){
-      const a=i*Math.PI*2/10,leaf=new THREE.Group();
-      const radius=i<4?.045:.105,tilt=.18+(i%4)*.09;
-      leaf.position.set(Math.cos(a)*radius,.025+(i%3)*.012,Math.sin(a)*radius);
-      leaf.rotation.y=-a;leaf.rotation.z=Math.cos(a)*tilt;
-      const shape=new THREE.Shape();shape.moveTo(0,-.24);
-      shape.bezierCurveTo(-.075,-.19,-.16,-.11,-.145,-.035);
-      shape.bezierCurveTo(-.18,.035,-.105,.12,-.075,.17);
-      shape.bezierCurveTo(-.04,.225,-.015,.245,0,.25);
-      shape.bezierCurveTo(.035,.22,.105,.145,.13,.075);
-      shape.bezierCurveTo(.17,.005,.105,-.105,.075,-.16);
-      shape.bezierCurveTo(.045,-.205,.02,-.23,0,-.24);
-      const mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape,18),i%3?leafMat:lightLeaf);
-      mesh.material.side=THREE.DoubleSide;mesh.rotation.x=-Math.PI/2;mesh.position.y=.018;mesh.castShadow=true;leaf.add(mesh);
-      const line=new THREE.Mesh(new THREE.CylinderGeometry(.006,.009,.34,6),vein);
-      line.rotation.x=Math.PI/2;line.position.set(0,.025,.005);leaf.add(line);
+    // Layered lettuce leaves with curled, rippled edges and raised central veins.
+    for(let i=0;i<14;i++){
+      const a=i*Math.PI*2/14,leaf=new THREE.Group();
+      leaf.position.set(Math.cos(a)*(.035+(i%3)*.018),.025+(i%4)*.008,Math.sin(a)*(.035+(i%3)*.018));
+      leaf.rotation.y=-a;leaf.rotation.z=Math.cos(a)*(.12+(i%4)*.045);
+      const positions=[],indices=[],rows=16,cols=10;
+      for(let r=0;r<=rows;r++){
+        const t=r/rows,along=(t-.5)*.52,width=Math.sin(Math.PI*t)*(.045+(i%3)*.009);
+        for(let c=0;c<=cols;c++){
+          const u=c/cols*2-1,edge=Math.pow(Math.abs(u),1.7);
+          const ripple=Math.sin(t*34+i*1.7+u*5.5)*.018*edge;
+          const x=u*width+ripple;
+          const y=.018+(1-u*u)*.045+Math.sin(t*29+i*1.2)*.009+edge*Math.sin(t*42+i)*.012;
+          positions.push(x,y,along);
+        }
+      }
+      for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const p=r*(cols+1)+c;indices.push(p,p+cols+1,p+1,p+1,p+cols+1,p+cols+2)}
+      const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);geo.computeVertexNormals();
+      const mesh=new THREE.Mesh(geo,i%4===0?lightLeaf:leafMat);mesh.material.side=THREE.DoubleSide;mesh.castShadow=true;mesh.receiveShadow=true;leaf.add(mesh);
+      const midrib=new THREE.Mesh(new THREE.CylinderGeometry(.004,.009,.43,6),vein);midrib.rotation.x=Math.PI/2;midrib.position.set(0,.062,0);leaf.add(midrib);
       root.add(leaf);
     }
   } else if(name==='Soğan'){
