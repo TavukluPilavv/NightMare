@@ -26,10 +26,10 @@ export function createHumanCustomer(THREE, options = {}) {
     const irisMesh=add(new THREE.SphereGeometry(.022,14,10),iris,0,0,-.018);eyeGroup.add(irisMesh);
     const pupilMesh=add(new THREE.SphereGeometry(.011,12,8),pupil,0,0,-.027);eyeGroup.add(pupilMesh);
     const lid=add(new THREE.BoxGeometry(.105,.004,.012),skin,0,.055,-.022);eyeGroup.add(lid);lids.push(lid);eyes.push(eyeGroup);
-    const browMesh=add(new THREE.CapsuleGeometry(.012,.07,3,7),brow,x,.092,-.225);browMesh.rotation.z=x<0?-.12:.12;brows.push(browMesh);
+    const browMesh=add(new THREE.CapsuleGeometry(.012,.07,3,7),brow,x,.092,-.225);browMesh.rotation.z=x<0?-.12:.12;head.add(browMesh);brows.push(browMesh);
   }
-  const mouth=add(new THREE.CapsuleGeometry(.012,.075,3,8),mat(strange?0x18070b:0x713d37),0,-.105,-.235);mouth.rotation.z=Math.PI/2;
-  const nose=add(new THREE.SphereGeometry(.035,12,9),skin,0,-.035,-.245);nose.scale.set(.75,.8,.8);
+  const mouth=add(new THREE.CapsuleGeometry(.012,.075,3,8),mat(strange?0x18070b:0x713d37),0,-.105,-.235);mouth.rotation.z=Math.PI/2;head.add(mouth);
+  const nose=add(new THREE.SphereGeometry(.035,12,9),skin,0,-.035,-.245);nose.scale.set(.75,.8,.8);head.add(nose);
   for(const x of [-.39,.39]){
     add(new THREE.SphereGeometry(.13,16,12),shirt,x,1.39,0);
     const armPivot=new THREE.Group();armPivot.position.set(x,1.38,0);group.add(armPivot);
