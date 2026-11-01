@@ -35,3 +35,7 @@ export function playDoorBell(){playTone(1250,.12,'sine',.035);setTimeout(()=>pla
 export function playCustomerTalk(strange=false){
  try{const c=audioContext(),now=c.currentTime;const osc=c.createOscillator(),filter=c.createBiquadFilter(),gain=c.createGain(),lfo=c.createOscillator(),lfoGain=c.createGain();osc.type=strange?'sawtooth':'triangle';osc.frequency.value=strange?88:125+Math.random()*65;filter.type='bandpass';filter.frequency.value=strange?360:720;filter.Q.value=2.5;lfo.frequency.value=5.2;lfoGain.gain.value=5;lfo.connect(lfoGain);lfoGain.connect(osc.frequency);gain.gain.setValueAtTime(.001,now);gain.gain.linearRampToValueAtTime(.026,now+.06);gain.gain.exponentialRampToValueAtTime(.001,now+.52);osc.connect(filter);filter.connect(gain);gain.connect(master);lfo.start(now);osc.start(now);osc.stop(now+.54);lfo.stop(now+.54)}catch{}
 }
+
+export function playSqueeze(){playTone(190,.18,'triangle',.045);playNoise(.22,.022,1200);setTimeout(()=>playTone(250,.12,'triangle',.025),170)}
+export function playMotorbikeArrival(){playTone(95,.8,'sawtooth',.04);setTimeout(()=>playTone(135,.55,'sawtooth',.035),280);playNoise(.7,.018,500)}
+export function playMotorbikeDeparture(){playTone(140,.45,'sawtooth',.04);setTimeout(()=>playTone(85,.9,'sawtooth',.025),280)}
