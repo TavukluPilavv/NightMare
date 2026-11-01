@@ -283,7 +283,7 @@ function makeOrder(){
  if(Math.random()<.68)items.push('Domates');if(Math.random()<.34)items.push('Ketçap');if(Math.random()<.28)items.push('Mayonez');if(Math.random()<.18)items.push('Hardal');
  if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
  const count=1+Math.floor(Math.random()*3);currentOrder={items,count,createdAt:elapsed};updateOrderHud();
- toast('Müşteri: Kolay gelsin usta! '+count+' tane tavuk tantuni alabilir miyim?');objective('Müşterinin istediği '+count+' tantuniyi hazırla. Malzemeleri ekmeğin içine koy.');playCustomerTalk(customerStrange);
+ toast(customerStrange?'Müşteri: Ne biçim servis bu lan? '+count+' tantuni istiyorum, hızlı ol.':'Müşteri: Kolay gelsin usta! '+count+' tane tavuk tantuni alabilir miyim?');objective('Müşterinin istediği '+count+' tantuniyi hazırla. Malzemeleri ekmeğin içine koy.');playCustomerTalk(customerStrange);
  if(!customer)spawnCustomer();
 }
 function ringPhone(){
@@ -401,7 +401,7 @@ function interact(target){
   if(customerStrange&&Math.random()<.025){jumpscare('Müşterinin yüzü bir anlığına değişti.');return}
   const lines=customerStrange?['Ne bakıyorsun? Siparişimi al.','Hadi usta, çok bekletme.','Tantunimi hızlı yap, sabrım yok.']:['Kolay gelsin usta!','Bugün dükkân sakinmiş.','Biraz acı olsun, eline sağlık.'];
   toast('Müşteri: '+lines[Math.floor(Math.random()*lines.length)]);customer.userData.setExpression?.(customerStrange?'angry':'happy');playCustomerTalk(customerStrange);
-  if(!currentOrder)makeOrder();else toast('Müşteri: '+currentOrder.count+' tantunimi bekliyorum.');return;
+  if(!currentOrder)makeOrder();else{toast('Sen: Tamamdır, hemen hazırlıyorum. Müşteri: '+currentOrder.count+' tantunimi bekliyorum.');playCustomerTalk(customerStrange)}return;
  }
  if(name==='Sipariş kağıdı'){toast(currentOrder?'Sipariş: '+currentOrder.items.join(', '):'Henüz sipariş yok.');return}
  toast(name+' ile etkileşime geçtin.');
