@@ -155,7 +155,7 @@ function makeStreetLamp(x,z){
  streetLights.push({lamp,glow});
 }
 function makePedestrian(x,z,color,variant){
- const g=createHumanCustomer(THREE,{variant:variant||0,role:'pedestrian'});g.scale.set(.82,.9,.82);g.position.set(x,0,z);g.userData.walkDirection=x<0?1:-1;scene.add(g);walkers.push(g);
+ const g=createHumanCustomer(THREE,{variant:variant||0,role:'pedestrian'});g.scale.set(.94,1.08,.94);g.position.set(x,0,z);g.userData.walkDirection=x<0?1:-1;scene.add(g);walkers.push(g);
 }
 function makeCar(x,z,color,direction){
  const g=new THREE.Group(),body=mat(color,.42,.18),glass=mat(0x52616b,.25,.2),rubber=mat(0x111315,.8);
@@ -497,7 +497,7 @@ function animate(now=0){
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
   }
-  if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*5.2;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*.88;if(person.position.x>12||person.position.x< -12)person.userData.walkDirection*=-1;person.userData.animate?.(elapsed,true)}}
+  if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*7.0;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*1.05;if(person.position.x>12||person.position.x< -12)person.userData.walkDirection*=-1;person.userData.animate?.(elapsed,true)}}
   if(apparition){apparitionTimer-=dt;apparition.userData.animate?.(elapsed,false);if(apparitionTimer<=0)removeBlackoutFigure();if(apparitionTimer>0&&camera.position.distanceTo(apparition.position)<1.9&&scareCooldown<=0&&Math.random()<.0007)jumpscare('Karanlıktaki siluet bir anda yüzüne doğru atıldı!')}
   if(blackoutActive&&Math.random()<.025){mainLamp.intensity=Math.random()*2}
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
