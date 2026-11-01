@@ -26,15 +26,16 @@ export function createMopModel(THREE, mat) {
   const head=new THREE.Mesh(new THREE.BoxGeometry(.54,.12,.25),metal);head.position.set(0,.15,0);head.castShadow=true;root.add(head);
   const band=new THREE.Mesh(new THREE.BoxGeometry(.5,.035,.27),fibres[1]);band.position.set(0,.215,0);root.add(band);
   // Lifler zemine dogru sarkar ve gercek paspas gibi kivrim yapar.
-  for(let i=0;i<28;i++){
-    const baseX=((i%14)-6.5)*.034,baseZ=(Math.floor(i/14)-.5)*.105,points=[];
-    for(let j=0;j<=10;j++){
-      const t=j/10,x=baseX+Math.sin(t*7.2+i*.83)*(.012+t*.022);
-      const z=baseZ+Math.cos(t*6.4+i*.57)*(.012+t*.026),y=.105-t*.105+Math.sin(t*8+i)*.012;
+  for(let i=0;i<42;i++){
+    const baseX=((i%21)-10)*.024,baseZ=(Math.floor(i/21)-.5)*.115,points=[];
+    for(let j=0;j<=12;j++){
+      const t=j/12,edgeWave=Math.sin(t*8.5+i*.91)*(.009+t*.025);
+      const x=baseX+Math.sin(t*9.2+i*.83)*(.012+t*.024)+edgeWave;
+      const z=baseZ+Math.cos(t*7.8+i*.57)*(.012+t*.03),y=.105-t*.11+Math.sin(t*10+i)*.013;
       points.push(new THREE.Vector3(x,y,z));
     }
     const curve=new THREE.CatmullRomCurve3(points);
-    const strand=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.012+(i%3)*.002,6,false),fibres[i%fibres.length]);
+    const strand=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.009+(i%4)*.002,5,false),fibres[i%fibres.length]);
     strand.castShadow=true;strand.receiveShadow=true;root.add(strand);
   }
   for(let i=0;i<12;i++){
