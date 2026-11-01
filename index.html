@@ -115,7 +115,7 @@ const interactables=[],cars=[],walkers=[],streetLights=[],boardVisuals=[];
 let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,backRoomDoor,lever,switchCover,boardGroup,grillGroup,fryerGroup,cutterGroup,mopGroup,stain,orderPaper,orderTexture,customer=null,courier=null,openSign,bathroomDoor;
 let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,backRoomDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,breadVisuals=[],apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
 let money=0,orders=0,day=1,elapsed=0,toastTimer=0,phoneRinging=false,patrolRinging=false,patrolCallDone=false;
-let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false,courierLeaving=false,nextStrangeScareAt=0,dialogueTimer=0;
+let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false,courierLeaving=false,customerLeaving=false,nextStrangeScareAt=0,dialogueTimer=0;
 let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
 let nextPhoneAt=12,nextPowerAt=78,footstepTimer=0,customerTimer=8;
 const clock=new THREE.Clock(),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(0,0);
@@ -300,7 +300,7 @@ function clearHeld(){if(heldVisual){camera.remove(heldVisual);heldVisual=null}he
 function spawnCustomer(){
  if(customer)return;
  const chance=Math.min(.09+orders*.025,.34);customerStrange=day>=2&&Math.random()<chance;
- customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customer.scale.setScalar(1.14);
+ customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customerLeaving=false;customer.scale.setScalar(1.14);
  customer.position.set((Math.random()-.5)*1.4,0,9.2);customer.userData.name='Müşteri';customer.userData.interactive=true;customer.userData.walking=true;customer.userData.setExpression?.(customerStrange?'angry':'happy');scene.add(customer);interactables.push(customer);
  doorOpen=true;frontDoor.rotation.y=-1.15;playDoorBell();playCustomerVoice(customerStrange);playCustomerTalk(customerStrange);
  showDialogue(customerStrange?'ŞÜPHELİ MÜŞTERİ':'MÜŞTERİ',customerStrange?'Usta… beni bekletme. Burada gece uzun.':'İyi akşamlar, kolay gelsin. Bir tavuk tantuni alabilir miyim?','red');
@@ -396,8 +396,8 @@ function serveOrder(){
  toast((nextIndex+1)+' / '+currentOrder.count+' tantuni tek tek teslim edildi! +₺'+(45+bonus));playTone(760,.2);playDoor();
  if(currentOrder.delivered<currentOrder.count){objective((currentOrder.count-currentOrder.delivered)+' tantuni daha teslim et. Her birini ayrı ayrı ver.');return}
  orders++;clearBoard();clearHeld();currentOrder=null;updateOrderHud();updateHud();
- if(courier){courierLeaving=true;showDialogue('KURYE','Paketleri aldım, hemen götürüyorum.','red');playMotorbikeDeparture();objective('Kurye dükkândan yürüyerek çıkıyor. Sonra sıradaki müşteri gelecek.');}
- else{removeCustomer();customerTimer=8;nextPhoneAt=elapsed+18;objective('Sipariş tamamlandı. Yeni müşteriyi bekle.');}
+ if(courier){courierLeaving=true;courier.rotation.y=Math.PI;showDialogue('KURYE','Paketleri aldım, hemen götürüyorum.','red');playMotorbikeDeparture();objective('Kurye dükkândan yürüyerek çıkıyor. Sonra sıradaki müşteri gelecek.');}
+ else{customerLeaving=true;if(customer){customer.rotation.y=Math.PI;showDialogue('MÜŞTERİ','Teşekkür ederim usta, iyi geceler.','red')}nextPhoneAt=elapsed+18;objective('Müşteri siparişini aldı ve dükkândan çıkıyor.');}
  if(orders===2)toast('İlk kazançlar birikti. Fritöz yükseltmesini açabilirsin.');
 }
 function beginClosingShift(){
@@ -505,14 +505,14 @@ function animate(now=0){
    if(!shiftClosing&&elapsed>=nextPhoneAt&&!phoneRinging&&!currentOrder){ringPhone();nextPhoneAt=elapsed+42+Math.random()*18}
    if(elapsed>=nextPowerAt&&!blackoutActive){powerOut();nextPowerAt=elapsed+115}
    if(shiftStarted&&!shiftClosing&&elapsed-shiftStartElapsed>=180){beginClosingShift()}
-   if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*1.28);customer.userData.animate?.(elapsed,true)}else if(customer){customer.userData.animate?.(elapsed,false)}
-   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*1.48);courier.userData.animate?.(elapsed,true)}else if(courier&&courierLeaving){courier.position.z+=dt*1.8;courier.userData.animate?.(elapsed,true);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false)}
+   if(customer&&customerLeaving){customer.position.z+=dt*1.45;customer.userData.animate?.(elapsed,true,dt);if(customer.position.z>10){removeCustomer();customerLeaving=false}}else if(customer&&customer.position.z>1.55){customer.position.z=Math.max(1.55,customer.position.z-dt*1.28);customer.userData.animate?.(elapsed,true,dt)}else if(customer){customer.userData.animate?.(elapsed,false,dt)}
+   if(courier&&!courierLeaving&&courier.position.z>1.55){courier.position.z=Math.max(1.55,courier.position.z-dt*1.48);courier.userData.animate?.(elapsed,true,dt)}else if(courier&&courierLeaving){courier.position.z+=dt*1.8;courier.userData.animate?.(elapsed,true);if(courier.position.z>10){removeCourier();spawnCustomer();showDialogue('MÜŞTERİ','Merhaba, içerisi açık mı? Bir şey soracaktım.','red')}}else if(courier){courier.userData.animate?.(elapsed,false,dt)}
    if(customer&&customerStrange&&currentOrder&&customer.position.z<=1.58&&elapsed>=nextStrangeScareAt&&scareCooldown<=0){nextStrangeScareAt=elapsed+38+Math.random()*45;if(Math.random()<.13){const behind=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));apparition=createHumanCustomer(THREE,{strange:true,variant:7,role:'customer'});apparition.scale.setScalar(1.1);apparition.position.copy(camera.position).addScaledVector(behind,1.25);apparition.position.y=0;scene.add(apparition);apparitionTimer=2.2;jumpscare('Arkana biri geldi! Bir anda ensende nefesini hissettin.')}}
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
   }
   if(started&&camera.position.z>6){for(const car of cars){car.position.x+=car.userData.direction*dt*7.0;for(const wheel of car.userData.wheels||[])wheel.rotation.x+=dt*car.userData.direction*7/.23;if(car.position.x>29)car.position.x=-29;if(car.position.x< -29)car.position.x=29}for(const person of walkers){person.position.x+=person.userData.walkDirection*dt*1.05;if(person.position.x>12||person.position.x< -12){person.userData.walkDirection*=-1;person.rotation.y=person.userData.walkDirection>0?-Math.PI/2:Math.PI/2}person.userData.animate?.(elapsed,true,dt)}}
-  if(apparition){apparitionTimer-=dt;apparition.userData.animate?.(elapsed,false);if(apparitionTimer<=0)removeBlackoutFigure();if(apparitionTimer>0&&camera.position.distanceTo(apparition.position)<1.9&&scareCooldown<=0&&Math.random()<.0007)jumpscare('Karanlıktaki siluet bir anda yüzüne doğru atıldı!')}
+  if(apparition){apparitionTimer-=dt;apparition.userData.animate?.(elapsed,false,dt);if(apparitionTimer<=0)removeBlackoutFigure();if(apparitionTimer>0&&camera.position.distanceTo(apparition.position)<1.9&&scareCooldown<=0&&Math.random()<.0007)jumpscare('Karanlıktaki siluet bir anda yüzüne doğru atıldı!')}
   if(blackoutActive&&Math.random()<.025){mainLamp.intensity=Math.random()*2}
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
  }
