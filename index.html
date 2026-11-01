@@ -266,7 +266,7 @@ function buildWorld(){
  const wetAsphalt=new THREE.MeshStandardMaterial({color:0x35414a,roughness:.24,metalness:.12,transparent:true,opacity:.5});
  for(let i=0;i<22;i++){const radius=.22+Math.random()*.7,puddle=new THREE.Mesh(new THREE.CircleGeometry(radius,24),wetAsphalt);puddle.rotation.x=-Math.PI/2;puddle.scale.set(1.1,.55,1);puddle.position.set((Math.random()-.5)*19,-.068,15+Math.random()*87);puddle.receiveShadow=true;scene.add(puddle)}
  for(let z=15;z<=135;z+=20){makeStreetLamp(-15.3,z);makeStreetLamp(15.3,z)}
- const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE','MANAV','TEKEL','PASTANE','ÇİÇEKÇİ'];
+ const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE','MANAV','TEKEL','PASTANE','ÇİÇEKÇİ','ECZANE','BERBER','GİYİM'];
  for(let i=0;i<12;i++){
   const z=16+i*10.2;
   for(const side of [-1,1]){
@@ -614,7 +614,7 @@ function updateMovement(dt){
 function startGame(){
  if(started)return;started=true;$('intro').classList.add('hide');camera.position.set(0,2.10,34);yaw=0;pitch=0;updateLook();startShopAmbience();playTone(440,.14);objective('TANTUNİTEK tabelasına yürü. Kapıyı açıp içeri gir.');toast('Çarşıdasın. Joystick ile dükkâna doğru ilerle.');
 }
-let lastFrameAt=0,frameSamples=0,frameTimeTotal=0,lastPerfCheck=0;
+let lastFrameAt=0,frameSamples=0,frameTimeTotal=0,lastPerfCheck=0,nextCullAt=0;
 function animate(now=0){
  requestAnimationFrame(animate);
  if(document.hidden)return;
@@ -632,7 +632,7 @@ function animate(now=0){
    if(cookTimer>0){cookTimer-=dt;if(grillCooking&&cookVisual){cookVisual.rotation.y+=dt*.35;cookVisual.position.y=.72+Math.sin(elapsed*8)*.012;cookSteam.forEach((sm,i)=>{const t=(elapsed*.48+sm.userData.phase)%1;sm.position.y=.72+t*.95;sm.position.x=-.48+(i%4)*.3+Math.sin(elapsed*1.7+i)*.08;sm.material.opacity=(1-t)*.32;sm.scale.setScalar(.75+t*1.8)})}if(cookTimer<=0)finishCooking()}updateSauceSqueeze(dt);
    if(scareCooldown>0)scareCooldown-=dt;
   }
-  if(started&&camera.position.z>6&&camera.position.z<108){
+  if(started&&camera.position.z>6&&camera.position.z<142){
   for(const car of cars){
    car.position.z+=car.userData.direction*dt*7.0;
    for(const wheel of car.userData.wheels||[])wheel.rotation.z+=dt*car.userData.direction*7/.25;
@@ -652,7 +652,7 @@ function animate(now=0){
   if(toastTimer>0&&(toastTimer-=dt)<=0)$('toast').classList.remove('show');if(dialogueTimer>0&&(dialogueTimer-=dt)<=0)$('dialogue').classList.add('hide');
  }
  if(now-lastPerfCheck>1800&&frameSamples>24){const avg=frameTimeTotal/frameSamples;if(avg>22&&quality!=='low'){quality='low';$('quality').value='low';applyQuality();toast('FPS koruması: gölgeler ve çözünürlük düşürüldü.')}lastPerfCheck=now;frameSamples=0;frameTimeTotal=0}
- frameSamples++;frameTimeTotal+=dt*1000;const renderInterval=1000/targetFPS;if(now-lastRenderAt>=renderInterval){if(lastRenderAt===0)lastRenderAt=now;else lastRenderAt+=renderInterval;if(now-lastRenderAt>renderInterval*2)lastRenderAt=now;if(dynamicLights.length){for(const entry of dynamicLights){const d=entry.lamp.position.distanceTo(camera.position);entry.lamp.intensity=(d<25&&quality!=='low')?entry.intensity:0;}}renderer.render(scene,camera);fpsFrames++;if(now-fpsLastUpdate>=1000){measuredFPS=fpsFrames*1000/Math.max(1,now-fpsLastUpdate);fpsFrames=0;fpsLastUpdate=now;$('fpsCounter').textContent='FPS: '+Math.round(measuredFPS)+' / '+targetFPS}}
+ if(now-nextCullAt>400){const limitSq=65*65;for(const entity of [...cars,...walkers])entity.visible=entity.position.distanceToSquared(camera.position)<limitSq;nextCullAt=now;}frameSamples++;frameTimeTotal+=dt*1000;const renderInterval=1000/targetFPS;if(now-lastRenderAt>=renderInterval){if(lastRenderAt===0)lastRenderAt=now;else lastRenderAt+=renderInterval;if(now-lastRenderAt>renderInterval*2)lastRenderAt=now;if(dynamicLights.length){for(const entry of dynamicLights){const d=entry.lamp.position.distanceTo(camera.position);entry.lamp.intensity=(d<25&&quality!=='low')?entry.intensity:0;}}renderer.render(scene,camera);fpsFrames++;if(now-fpsLastUpdate>=1000){measuredFPS=fpsFrames*1000/Math.max(1,now-fpsLastUpdate);fpsFrames=0;fpsLastUpdate=now;$('fpsCounter').textContent='FPS: '+Math.round(measuredFPS)+' / '+targetFPS}}
 }
 function reportRuntimeError(error){
  let message=error?.message||String(error||'Bilinmeyen hata');if(message.includes('Please report this bug to chromium'))message='Android grafik sürücüsü WebGL oturumunu kapattı. Düşük grafik ayarını seçip oyunu yeniden başlat.';
