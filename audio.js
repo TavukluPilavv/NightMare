@@ -26,3 +26,12 @@ export function startPhoneRing(){
  stopPhoneRing();const burst=()=>{playTone(920,.34,'sine',.09);setTimeout(()=>playTone(690,.38,'sine',.085),420);setTimeout(()=>playTone(920,.34,'sine',.09),880);setTimeout(()=>playTone(690,.38,'sine',.085),1300)};burst();phoneRingTimer=setInterval(burst,2300);
 }
 export function stopPhoneRing(){if(phoneRingTimer!==null){clearInterval(phoneRingTimer);phoneRingTimer=null}}
+
+export function playPickup(){playTone(610,.055,'triangle',.025);playNoise(.045,.012,1700)}
+export function playPlace(){playTone(260,.07,'triangle',.035);playNoise(.09,.018,650)}
+export function playChop(){for(let i=0;i<3;i++)setTimeout(()=>{playNoise(.055,.05,1500);playTone(125,.045,'square',.035)},i*115)}
+export function playWash(){playNoise(.9,.028,2100);playTone(520,.12,'sine',.012)}
+export function playDoorBell(){playTone(1250,.12,'sine',.035);setTimeout(()=>playTone(980,.16,'sine',.03),130)}
+export function playCustomerTalk(strange=false){
+ try{const c=audioContext(),now=c.currentTime;const osc=c.createOscillator(),filter=c.createBiquadFilter(),gain=c.createGain(),lfo=c.createOscillator(),lfoGain=c.createGain();osc.type=strange?'sawtooth':'triangle';osc.frequency.value=strange?88:125+Math.random()*65;filter.type='bandpass';filter.frequency.value=strange?360:720;filter.Q.value=2.5;lfo.frequency.value=5.2;lfoGain.gain.value=5;lfo.connect(lfoGain);lfoGain.connect(osc.frequency);gain.gain.setValueAtTime(.001,now);gain.gain.linearRampToValueAtTime(.026,now+.06);gain.gain.exponentialRampToValueAtTime(.001,now+.52);osc.connect(filter);filter.connect(gain);gain.connect(master);lfo.start(now);osc.start(now);osc.stop(now+.54);lfo.stop(now+.54)}catch{}
+}
