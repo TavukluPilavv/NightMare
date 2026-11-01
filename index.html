@@ -269,7 +269,7 @@ function clearHeld(){if(heldVisual){camera.remove(heldVisual);heldVisual=null}he
 function spawnCustomer(){
  if(customer)return;
  const chance=Math.min(.07+orders*.018,.28);customerStrange=day>=2&&Math.random()<chance;
- customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customer.scale.setScalar(1.16);
+ customer=createHumanCustomer(THREE,{strange:customerStrange,variant:Math.floor(Math.random()*8),role:'customer'});customer.scale.setScalar(1.03);
  customer.position.set((Math.random()-.5)*1.4,0,9.2);customer.userData.name='Müşteri';customer.userData.interactive=true;customer.userData.walking=true;customer.userData.setExpression?.(customerStrange?'angry':'happy');scene.add(customer);interactables.push(customer);
  doorOpen=true;frontDoor.rotation.y=-1.15;playDoorBell();playCustomerVoice(customerStrange);playCustomerTalk(customerStrange);
  if(customerStrange){toast('Kapı açıldı. Garip bir müşteri içeri girdi…');objective('Müşterinin yüz ifadesine dikkat et. Siparişini dinle.')}else{toast('Kapı zili çaldı. Yeni müşteri içeri giriyor.');objective('Müşteriyle konuşup siparişini al.')}
@@ -384,7 +384,7 @@ function interact(target){
  if(name.startsWith('Tuvalet kabini ')){target.rotation.y=target.rotation.y===0?-1.05:0;toast('Tuvalet kabini kapısı açıldı.');playDoor();return}
  if(name==='Açık/Kapalı tabelası'){if(!shiftClosing){toast('Vardiya bitmeden dükkânı kapatamazsın.');return}if(!bossCallDone){toast('Önce patronun telefonunu dinle.');return}if(stains.some(d=>d.visible)){toast('Önce bütün kirleri paspasla.');return}shopClosed=true;openSign.userData.signCtx.fillStyle='#7c1717';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('KAPALI',256,92);openSign.userData.signTexture.needsUpdate=true;startNextDay();return}
  if(name==='Lavabo'){playWash();toast('Lavaboda ellerini yıkadın.');return}
- if(name==='Arka çıkış kapısı'){backDoorOpen=!backDoorOpen;backDoor.rotation.y=backDoorOpen?-1.15:0;toast(backDoorOpen?'Arka çıkış açıldı. Dışarıdaki şaltere ulaş!':'Arka çıkış kapandı.');playDoor();if(backDoorOpen&&blackoutActive&&Math.random()<.45)jumpscare('Kapının arkasında bir gölge duruyordu.');return}
+ if(name==='Arka çıkış kapısı'){backDoorOpen=!backDoorOpen;backDoor.rotation.y=backDoorOpen?-1.15:0;toast(backDoorOpen?'Arka çıkış açıldı. Dışarıdaki şaltere ulaş!':'Arka çıkış kapandı.');playDoor();if(backDoorOpen&&blackoutActive&&Math.random()<.08)jumpscare('Kapının arkasında bir gölge duruyordu.');return}
  if(name==='Yan oda kapısı'){target.rotation.y=target.rotation.y===0?-.95:0;toast('Yan odadan metalik bir ses geldi…');playWhisper();return}
  if(type==='switch'){if(blackoutActive)restorePower();else toast('Şalteri kontrol ettin. Elektrikler açık.');return}
  if(type==='mop'){hasMop=true;mopGroup.visible=false;toast('Arka odadan paspası aldın.');playPickup();return}
@@ -392,7 +392,7 @@ function interact(target){
  if(type==='cutter'){if(heldItem!=='Patates'){toast('Doğrama makinesi için önce patates al.');return}cutterGroup.userData.activate?.();addHeldVisual('Doğranmış patates');playChop();toast('Patates doğrandı. Şimdi fritöze koy.');return}
  if(type==='phone'){
   if(name==='Telefon'){if(phoneRinging){stopRing();makeOrder();}else toast('Telefon sessiz. Birazdan tekrar çalabilir.');return}
-  if(name==='Devriye telefonu'||name==='Patron telefonu'){if(patrolRinging){stopRing();if(shiftClosing){bossCallDone=true;toast('Patron: Gün bitti. Yeri paspasla, dükkânı kapat ve çık.');objective('Patronu dinle: lekeleri temizle, sonra tabelayı KAPALI yap.')}else{toast('Patron: Şalteri açtığını gördüm. Gece daha bitmedi.');objective('Patronun telefonu kapandı. Vardiyaya devam et.');playWhisper()}}else toast('Patronun telefonu sessiz.');return}
+  if(name==='Devriye telefonu'||name==='Patron telefonu'){if(patrolRinging){stopRing();if(shiftClosing){bossCallDone=true;toast('Patron: Gün bitti. Yeri paspasla, dükkânı kapat ve çık.');playCustomerVoice(true);objective('Patronu dinle: lekeleri temizle, sonra tabelayı KAPALI yap.')}else{toast('Patron: Şalteri açtığını gördüm. Gece daha bitmedi.');objective('Patronun telefonu kapandı. Vardiyaya devam et.');playWhisper()}}else toast('Patronun telefonu sessiz.');return}
  }
  if(type==='board'){putHeldItem();return}
  if(type==='grill'){startCooking('grill');return}
