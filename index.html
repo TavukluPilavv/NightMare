@@ -100,7 +100,7 @@ scene.fog=new THREE.FogExp2(0x111a25,.014);
 const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,150);
 camera.position.set(0,2.05,34);camera.rotation.order='YXZ';
 let renderer;
-try{renderer=new THREE.WebGLRenderer({antialias:innerWidth>900,powerPreference:'high-performance'})}catch(webglError){const el=document.getElementById('loadError');el.style.display='block';el.textContent='Bu cihazda WebGL 3D desteği açılamadı. Tarayıcıyı güncelle veya başka bir cihaz dene.';throw webglError}
+try{renderer=new THREE.WebGLRenderer({antialias:innerWidth>1400&&!matchMedia('(pointer: coarse)').matches,powerPreference:'low-power',alpha:false,depth:true,stencil:false,preserveDrawingBuffer:false})}catch(webglError){const el=document.getElementById('loadError');el.style.display='block';el.textContent='Bu cihazda WebGL 3D desteği açılamadı. Tarayıcıyı güncelle veya başka bir cihaz dene.';throw webglError}
 let quality=(innerWidth<900||((navigator.deviceMemory||8)<=4)||((navigator.hardwareConcurrency||8)<=4))?'low':'medium';
 function applyQuality(){
  const ratio=quality==='low'?Math.min(devicePixelRatio,.68):quality==='high'?Math.min(devicePixelRatio,1.15):Math.min(devicePixelRatio,.88);
@@ -256,7 +256,7 @@ function buildWorld(){
  for(let z=12;z<=104;z+=5)addBox(scene,'road centre dash',0,-.075,z,.15,.025,2.7,mat(0xe9dfbd,.72));
  for(const x of [-5.8,5.8])addBox(scene,'lane divider',x,-.077,56,.055,.018,102,mat(0x9ca0a0,.8));
  for(let i=0;i<11;i++)addBox(scene,'zebra crossing stripe',-9.5+i*1.9,-.074,12.1,1.08,.025,1.45,mat(0xf0eee5,.82));
- for(let z=15;z<=105;z+=10){makeStreetLamp(-15.3,z);makeStreetLamp(15.3,z)}
+ for(let z=15;z<=105;z+=20){makeStreetLamp(-15.3,z);makeStreetLamp(15.3,z)}
  const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE','MANAV','TEKEL','PASTANE','ÇİÇEKÇİ'];
  for(let i=0;i<9;i++){
   const z=16+i*10.2;
@@ -279,7 +279,7 @@ function buildWorld(){
    addBox(scene,'shop sign',frontX-side*.18,4.0,z,.2,.62,3.8,mat(0x17232a,.4,.25));
    const sign=addLabel(side<0?shopNames[i]:shopNames[(i+2)%shopNames.length],frontX-side*.3,4.0,z,3.55,.48);
    sign.rotation.y=side<0?Math.PI/2:-Math.PI/2;
-   pointLight(frontX-side*.9,2.65,z,0xffc77b,quality==='low'?1.2:3.2,7);
+   if(side<0)pointLight(frontX-side*.9,2.65,z,0xffc77b,quality==='low'?.7:2.6,7);
   }
  }
  const crowd=[[-12.5,17,1],[-12.5,25,3],[-12.5,35,5],[-12.5,45,7],[-12.5,56,2],[-12.5,68,4],[-12.5,80,6],[-12.5,93,0],[12.5,20,2],[12.5,30,4],[12.5,42,6],[12.5,54,0],[12.5,67,3],[12.5,81,5],[12.5,96,7]];
@@ -645,6 +645,7 @@ function reportRuntimeError(error){
 window.addEventListener('error',event=>reportRuntimeError(event.error||event.message));
 window.addEventListener('unhandledrejection',event=>reportRuntimeError(event.reason));
 renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();reportRuntimeError(new Error('Grafik belleği sıfırlandı. Sayfayı yenileyip düşük grafik ayarını seç.'))});
+renderer.domElement.addEventListener('webglcontextrestored',()=>{quality='low';$('quality').value='low';applyQuality();$('loadError').style.display='none';toast('Grafik sistemi yeniden başladı. Düşük grafik ayarı açıldı; oyuna tekrar girebilirsin.');});
 function playNoiseSafe(){playTone(180,.08,'triangle',.03)}
 function setupControls(){
  $('startBtn').addEventListener('pointerdown',e=>{e.preventDefault();startGame()},{passive:false});
