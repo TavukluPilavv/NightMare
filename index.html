@@ -253,7 +253,19 @@ function buildWorld(){
  // Ayri tuvalet binasi, dort kabin ve lavabo
  addBox(scene,'bathroom floor',0,-.13,-20,12,.24,9,mat(0x77736d,.82));addBox(scene,'bathroom left wall',-6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom right wall',6,1.8,-20,.2,3.6,9,mat(0xb8b4aa));addBox(scene,'bathroom back wall',0,1.8,-24.5,12,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front left wall',-3.45,1.8,-15.5,5.1,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front right wall',3.45,1.8,-15.5,5.1,3.6,.2,mat(0xb8b4aa));addBox(scene,'bathroom front lintel',0,3.48,-15.5,1.9,.24,.2,mat(0xb8b4aa));addBox(scene,'bathroom ceiling',0,3.65,-20,12,.18,9,mat(0x33363a));pointLight(0,3,-19,0xe4edff,13,11);
  bathroomDoor=createDoor('Tuvalet kapısı',0,-15.5,1.8);bathroomDoor.position.x=-.9;
- for(let i=0;i<4;i++){const x=-4.5+i*3;addBox(scene,'toilet stall divider',x+1.15,1.35,-19.2,.09,2.7,2.3,mat(0x9c9a91));const stall=createDoor('Tuvalet kabini '+(i+1),x,-18.05,1.0);stall.position.x=x-.5;const bowl=new THREE.Mesh(new THREE.CylinderGeometry(.27,.31,.32,20),mat(0xf0eee7,.3));bowl.position.set(x+.5,.18,-20.55);scene.add(bowl);const lid=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,10,24),mat(0xd8d5cd,.3));lid.position.set(x+.5,.36,-20.55);lid.rotation.x=Math.PI/2;scene.add(lid)}
+ for(let i=0;i<4;i++){
+  const x=-4.5+i*3,porcelain=mat(0xf0eee7,.26),seatMat=mat(0xd5d2ca,.32),chrome=mat(0x9da5a8,.2,.78);
+  addBox(scene,'toilet stall divider',x+1.15,1.35,-19.2,.09,2.7,2.3,mat(0x9c9a91));
+  const stall=createDoor('Tuvalet kabini '+(i+1),x,-18.05,1.0);stall.position.x=x-.5;
+  // klozet: ayak, oval hazne, oturak, kapak ve rezervuar
+  const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(.19,.25,.38,24),porcelain);pedestal.position.set(x+.5,.2,-20.48);scene.add(pedestal);
+  const bowlBody=new THREE.Mesh(new THREE.SphereGeometry(.34,28,18),porcelain);bowlBody.scale.set(1,.62,1.16);bowlBody.position.set(x+.5,.42,-20.55);scene.add(bowlBody);
+  const inner=new THREE.Mesh(new THREE.SphereGeometry(.255,24,16),mat(0x8eaaa9,.22));inner.scale.set(1,.48,1.12);inner.position.set(x+.5,.49,-20.55);scene.add(inner);
+  const seat=new THREE.Mesh(new THREE.TorusGeometry(.245,.035,10,36),seatMat);seat.scale.set(1,1.16,1);seat.position.set(x+.5,.64,-20.55);seat.rotation.x=Math.PI/2;scene.add(seat);
+  const lid=new THREE.Mesh(new THREE.BoxGeometry(.46,.035,.57),porcelain);lid.position.set(x+.5,.68,-20.82);lid.rotation.x=-.12;scene.add(lid);
+  const tank=addBox(scene,'toilet cistern',x+.5,.83,-21.05,.52,.78,.24,porcelain);
+  const flush=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.025,12),chrome);flush.rotation.x=Math.PI/2;flush.position.set(x+.5,1.12,-20.91);scene.add(flush);
+ }
  const sink=new THREE.Group();sink.position.set(4.75,0,-16.7);
  const porcelain=mat(0xf0eee8,.22),chrome=mat(0x9da8aa,.18,.82);
  addBox(sink,'lavabo ayak',0,.47,0,.2,.86,.22,porcelain);
@@ -322,7 +334,7 @@ function makeOrder(fromPhone=true){
  if(fryerUnlocked&&Math.random()<.58)items.push('Patates kızartması');if(ringsUnlocked&&Math.random()<.38)items.push('Soğan halkası');
  const count=1+Math.floor(Math.random()*3);currentOrder={items,count,delivered:0,createdAt:elapsed};updateOrderHud();
  if(fromPhone)spawnCourier();else if(!customer)spawnCustomer();
- const message=count+' adet tavuk tantuni istendi. Sipariş ekranındaki malzemeleri takip et.';showDialogue(fromPhone?'TELEFON':'MÜŞTERİ',fromPhone?'Merhaba, paket siparişi hazırlar mısınız? Kurye yola çıkıyor.':(customerStrange?'Ne bakıyorsun? Üç tane tantuni istiyorum.':'Bir tavuk tantuni alabilir miyim?'), 'red');
+ const message=count+' adet tavuk tantuni istendi. Sipariş ekranındaki malzemeleri takip et.';showDialogue(fromPhone?'TELEFON':'MÜŞTERİ',fromPhone?'Merhaba, '+count+' adet paket tantuni hazırlar mısınız? Kurye yola çıkıyor.':(customerStrange?count+' tane tantuni istiyorum. Hemen hazırla.':count===1?'Bir tavuk tantuni alabilir miyim?':count+' tane tavuk tantuni alabilir miyim?'), 'red');
  toast(message);objective((fromPhone?'Kuryeye teslim edilecek ':'Müşteriye hazırlanacak ')+count+' tantuniyi tek tek hazırla.');playCustomerTalk(customerStrange);
 }
 function ringPhone(){
