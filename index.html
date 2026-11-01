@@ -144,19 +144,24 @@ function saveProgress(){
 loadProgress();
 
 const mat=(color,roughness=.8,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const textureMaterialCache=new Map();
 function texturedMaterial(color,kind='concrete',repeatX=5,repeatY=5){
- const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const ctx=canvas.getContext('2d');
- const hex='#'+Number(color).toString(16).padStart(6,'0');ctx.fillStyle=hex;ctx.fillRect(0,0,512,512);
- for(let i=0;i<5200;i++){
-  const x=Math.random()*512,y=Math.random()*512,a=.025+Math.random()*.09;
+ const key=[color,kind,repeatX,repeatY].join(':');
+ if(textureMaterialCache.has(key))return textureMaterialCache.get(key);
+ const size=quality==='low'?256:512,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');
+ const hex='#'+Number(color).toString(16).padStart(6,'0');ctx.fillStyle=hex;ctx.fillRect(0,0,size,size);
+ const speckles=quality==='low'?1300:4200;
+ for(let i=0;i<speckles;i++){
+  const x=Math.random()*size,y=Math.random()*size,a=.025+Math.random()*.09;
   ctx.fillStyle=Math.random()>.5?'rgba(255,255,255,'+a+')':'rgba(0,0,0,'+a+')';
-  if(kind==='tile'){ctx.fillRect(x,y,1.5+Math.random()*2,1.5+Math.random()*2)}
-  else if(kind==='asphalt'){ctx.fillRect(x,y,1+Math.random()*4,1+Math.random()*2)}
+  if(kind==='tile'){ctx.fillRect(x,y,1+Math.random()*2,1+Math.random()*2)}
+  else if(kind==='asphalt'){ctx.fillRect(x,y,1+Math.random()*3,1+Math.random()*2)}
   else{ctx.beginPath();ctx.arc(x,y,Math.random()*1.5,0,Math.PI*2);ctx.fill()}
  }
- if(kind==='tile'){ctx.strokeStyle='rgba(20,20,20,.16)';ctx.lineWidth=3;for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(i*64,0);ctx.lineTo(i*64,512);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*64);ctx.lineTo(512,i*64);ctx.stroke()}}
- const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(repeatX,repeatY);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
- return new THREE.MeshStandardMaterial({map:texture,color:0xffffff,roughness:.92});
+ if(kind==='tile'){ctx.strokeStyle='rgba(20,20,20,.18)';ctx.lineWidth=Math.max(1,size/170);for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(i*size/8,0);ctx.lineTo(i*size/8,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*size/8);ctx.lineTo(size,i*size/8);ctx.stroke()}}
+ const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(repeatX,repeatY);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(quality==='low'?2:4,renderer.capabilities.getMaxAnisotropy());
+ const material=new THREE.MeshStandardMaterial({map:texture,color:0xffffff,roughness:kind==='asphalt'?.98:.92});
+ textureMaterialCache.set(key,material);return material;
 }
 function addBox(parent,name,x,y,z,sx,sy,sz,material){
  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;m.userData.name=name;parent.add(m);return m;
@@ -237,49 +242,52 @@ function buildWorld(){
  const glass=new THREE.MeshPhysicalMaterial({color:0x9bb8c8,roughness:.12,metalness:.12,transparent:true,opacity:.34,transmission:.72,thickness:.12,ior:1.45,clearcoat:.9,clearcoatRoughness:.08});
  addBox(scene,'left window frame',-4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'left window glass',-4.85,2.15,5.58,1.3,1.5,.045,glass);
  addBox(scene,'right window frame',4.85,2.15,5.68,1.48,1.68,.14,mat(0x252d33,.42,.35));addBox(scene,'right window glass',4.85,2.15,5.58,1.3,1.5,.045,glass);
- // Genis carsi: tek parca asfalt, iki kaldirim ve uzunlamasina trafik koridoru.
- addBox(scene,'front plaza',0,-.2,8.8,34,.22,10.5,texturedMaterial(0x858078,'tile',15,5));
- const asphalt=texturedMaterial(0x252b31,'asphalt',7,25);asphalt.roughness=.98;
- addBox(scene,'continuous bazaar road',0,-.29,34,17,.18,50,asphalt);
+ // Genis carsi: kesintisiz zemin, genis asfalt, kaldirimlar ve uzun dukkan siralari.
+ addBox(scene,'bazaar terrain foundation',0,-.72,52,120,.9,148,mat(0x343a3d,.98));
+ addBox(scene,'front plaza',0,-.16,8.8,42,.2,10.5,texturedMaterial(0x858078,'tile',18,5));
+ const asphalt=texturedMaterial(0x252b31,'asphalt',9,48);asphalt.roughness=.98;
+ addBox(scene,'continuous bazaar road',0,-.18,56,23,.2,105,asphalt);
  for(const side of [-1,1]){
-  addBox(scene,side<0?'left bazaar sidewalk':'right bazaar sidewalk',side*11.1,-.2,34,4.8,.22,50,texturedMaterial(0x85827a,'tile',4,24));
-  addBox(scene,side<0?'left raised curb':'right raised curb',side*8.68,-.085,34,.28,.23,50,mat(0xc4beb2,.88));
-  addBox(scene,side<0?'left shop walkway':'right shop walkway',side*14.15,-.2,34,1.25,.22,50,texturedMaterial(0x77766f,'tile',2,24));
-  addBox(scene,side<0?'left road edge':'right road edge',side*8.18,-.185,34,.07,.02,49,mat(0xe5dfcf,.8));
+  addBox(scene,side<0?'left bazaar sidewalk':'right bazaar sidewalk',side*14.7,-.16,56,6.4,.2,105,texturedMaterial(0x85827a,'tile',5,48));
+  addBox(scene,side<0?'left raised curb':'right raised curb',side*11.35,-.035,56,.3,.25,105,mat(0xc4beb2,.88));
+  addBox(scene,side<0?'left shop walkway':'right shop walkway',side*18.55,-.16,56,1.25,.2,105,texturedMaterial(0x77766f,'tile',2,48));
+  addBox(scene,side<0?'left road edge':'right road edge',side*11.12,-.055,56,.07,.02,104,mat(0xe5dfcf,.8));
  }
- for(let z=13;z<=56;z+=5)addBox(scene,'road centre dash',0,-.185,z,.13,.02,2.55,mat(0xe9dfbd,.72));
- for(const x of [-4.1,4.1])addBox(scene,'lane divider',x,-.187,34,.055,.018,48,mat(0x9ca0a0,.8));
- for(let i=0;i<11;i++)addBox(scene,'zebra crossing stripe',-7.2+i*1.44,-.184,12.1,.82,.025,1.25,mat(0xf0eee5,.82));
- for(const z of [15,25,35,45,55]){makeStreetLamp(-11.5,z);makeStreetLamp(11.5,z)}
- const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE'];
- for(let i=0;i<5;i++){
-  const z=16+i*9;
+ for(let z=12;z<=104;z+=5)addBox(scene,'road centre dash',0,-.075,z,.15,.025,2.7,mat(0xe9dfbd,.72));
+ for(const x of [-5.8,5.8])addBox(scene,'lane divider',x,-.077,56,.055,.018,102,mat(0x9ca0a0,.8));
+ for(let i=0;i<11;i++)addBox(scene,'zebra crossing stripe',-9.5+i*1.9,-.074,12.1,1.08,.025,1.45,mat(0xf0eee5,.82));
+ for(let z=15;z<=105;z+=10){makeStreetLamp(-15.3,z);makeStreetLamp(15.3,z)}
+ const shopNames=['MARKET','KAFE','KASAP','FIRIN','BÜFE','MANAV','TEKEL','PASTANE','ÇİÇEKÇİ'];
+ for(let i=0;i<9;i++){
+  const z=16+i*10.2;
   for(const side of [-1,1]){
-   const cx=side*19.25,frontX=side*14.9,wallMat=mat(i%2?0x39454b:0x303e49,.88),frame=mat(0x252d33,.4,.38);
-   addBox(scene,'bazaar shop rear wall',side*23.48,2.45,z,.22,4.9,8.35,wallMat);
-   addBox(scene,'bazaar shop side wall A',cx,2.45,z-4.12,8.7,4.9,.22,wallMat);
-   addBox(scene,'bazaar shop side wall B',cx,2.45,z+4.12,8.7,4.9,.22,wallMat);
-   addBox(scene,'bazaar shop roof',cx,4.92,z,8.7,.2,8.35,mat(0x252d32,.82));
-   addBox(scene,'bazaar shop floor',cx,-.02,z,8.45,.12,8.1,texturedMaterial(0x6c6256,'tile',5,5));
-   addBox(scene,'shop front fascia',frontX-side*.045,3.95,z,.16,.72,8.1,mat(0x202b32,.55,.22));
-   for(const offset of [-2.35,2.35]){
-    addBox(scene,'shop window frame',frontX-side*.12,1.95,z+offset,.18,1.55,1.8,frame);
-    addBox(scene,'shop window glass',frontX-side*.22,1.95,z+offset,.035,1.3,1.55,glass);
-    addBox(scene,'window display sill',frontX-side*.23,1.15,z+offset,.22,.12,1.9,mat(0x6d6558,.55,.18));
+   const cx=side*23.5,frontX=side*19.05,wallMat=mat(i%2?0x39454b:0x303e49,.88),frame=mat(0x252d33,.4,.38);
+   addBox(scene,'bazaar shop rear wall',side*27.95,2.45,z,.22,4.9,8.55,wallMat);
+   addBox(scene,'bazaar shop side wall A',cx,2.45,z-4.22,8.9,4.9,.22,wallMat);
+   addBox(scene,'bazaar shop side wall B',cx,2.45,z+4.22,8.9,4.9,.22,wallMat);
+   addBox(scene,'bazaar shop roof',cx,4.92,z,8.9,.2,8.55,mat(0x252d32,.82));
+   addBox(scene,'bazaar shop floor',cx,-.02,z,8.65,.12,8.3,texturedMaterial(0x6c6256,'tile',5,5));
+   addBox(scene,'shop front fascia',frontX-side*.045,3.95,z,.16,.72,8.25,mat(0x202b32,.55,.22));
+   for(const offset of [-2.45,2.45]){
+    addBox(scene,'shop window frame',frontX-side*.12,1.95,z+offset,.18,1.55,1.9,frame);
+    addBox(scene,'shop window glass',frontX-side*.22,1.95,z+offset,.035,1.3,1.65,glass);
+    addBox(scene,'window display sill',frontX-side*.23,1.15,z+offset,.22,.12,2.0,mat(0x6d6558,.55,.18));
    }
-   addBox(scene,'shop entrance door',frontX-side*.14,1.22,z,.2,2.35,1.15,mat(i===1?0x69432e:0x465b63,.42));
-   addBox(scene,'shop door glass',frontX-side*.26,1.52,z,.035,1.35,.82,glass);
-   addBox(scene,'shop awning',frontX-side*.38,2.82,z,.72,.18,7.8,mat(i%2?0x9b4c35:0x536d75,.62));
-   addBox(scene,'shop sign',frontX-side*.18,4.0,z,.2,.62,3.6,mat(0x17232a,.4,.25));
-   const sign=addLabel(side<0?shopNames[i]:shopNames[(i+2)%shopNames.length],frontX-side*.3,4.0,z,3.35,.48);
+   addBox(scene,'shop entrance door',frontX-side*.14,1.22,z,.2,2.35,1.18,mat(i===1?0x69432e:0x465b63,.42));
+   addBox(scene,'shop door glass',frontX-side*.26,1.52,z,.035,1.35,.84,glass);
+   addBox(scene,'shop awning',frontX-side*.38,2.82,z,.72,.18,8.0,mat(i%2?0x9b4c35:0x536d75,.62));
+   addBox(scene,'shop sign',frontX-side*.18,4.0,z,.2,.62,3.8,mat(0x17232a,.4,.25));
+   const sign=addLabel(side<0?shopNames[i]:shopNames[(i+2)%shopNames.length],frontX-side*.3,4.0,z,3.55,.48);
    sign.rotation.y=side<0?Math.PI/2:-Math.PI/2;
-   pointLight(frontX-side*.9,2.65,z,0xffc77b,quality==='low'?1.5:3.2,7);
+   pointLight(frontX-side*.9,2.65,z,0xffc77b,quality==='low'?1.2:3.2,7);
   }
  }
- const crowd=[[-11.2,17,1],[-11.2,24,3],[-11.2,34,5],[-11.2,45,7],[11.2,20,2],[11.2,29,4],[11.2,40,6],[11.2,52,0]];
- for(let i=0;i<(quality==='low'?4:quality==='medium'?6:8);i++){const [x,z,v]=crowd[i];makePedestrian(x,z,0x315c84,v)}
- makeCar(-3.05,15,0x9b3430,1);makeCar(3.05,22,0x315a86,-1);makeCar(-3.05,32,0x777777,1);
- if(quality!=='low'){makeCar(3.05,43,0x3d6950,-1);makeCar(-3.05,53,0x9a7a38,1)}
+ const crowd=[[-12.5,17,1],[-12.5,25,3],[-12.5,35,5],[-12.5,45,7],[-12.5,56,2],[-12.5,68,4],[-12.5,80,6],[-12.5,93,0],[12.5,20,2],[12.5,30,4],[12.5,42,6],[12.5,54,0],[12.5,67,3],[12.5,81,5],[12.5,96,7]];
+ const pedestrianCount=quality==='low'?5:quality==='medium'?9:15;
+ for(let i=0;i<pedestrianCount;i++){const [x,z,v]=crowd[i];makePedestrian(x,z,0x315c84,v)}
+ const carCount=quality==='low'?4:quality==='medium'?6:8;
+ const traffic=[[-4.1,15,0x9b3430,1],[4.1,27,0x315a86,-1],[-4.1,40,0x777777,1],[4.1,53,0x3d6950,-1],[-4.1,68,0x9a7a38,1],[4.1,81,0x416f79,-1],[-4.1,94,0x6a5947,1],[4.1,104,0x7d3434,-1]];
+ for(let i=0;i<carCount;i++){const [x,z,color,direction]=traffic[i];makeCar(x,z,color,direction)}
  // Tezgah ve arka hazirlik alani
  addBox(scene,'front counter',0,.64,-.45,5.9,1.28,.95,wood);addBox(scene,'front counter top',0,1.32,-.45,6.05,.12,1.08,steel);
  addBox(scene,'rear prep counter',0,.64,-4.55,7.4,1.28,.9,wood);addBox(scene,'rear prep top',0,1.32,-4.55,7.5,.12,1.02,steel);
@@ -571,7 +579,7 @@ function updateMovement(dt){
  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
  const v=forward.multiplyScalar(moveY).add(right.multiplyScalar(moveX));if(v.lengthSq()>1)v.normalize();
  const oldZ=camera.position.z,oldX=camera.position.x;camera.position.addScaledVector(v,dt*4.5);
- const inBazaar=camera.position.z>10&&camera.position.z<59;camera.position.x=THREE.MathUtils.clamp(camera.position.x,inBazaar?-14.45:-24,inBazaar?14.45:24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,59);
+ const inBazaar=camera.position.z>10&&camera.position.z<106;camera.position.x=THREE.MathUtils.clamp(camera.position.x,inBazaar?-18.15:-24,inBazaar?18.15:24);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-25.5,106);
  // On tezgahin icinden gecilmez; oyuncu iki yandan dolasip hazirlik alanina ulasir.
  if(camera.position.z<.35&&camera.position.z> -1.25&&Math.abs(camera.position.x)<3.35){camera.position.x=oldX;camera.position.z=oldZ}
  // Dukkan duvarlari: kapali giris ve arka cikis gecilemez; kapinin acilmasi gerekir.
@@ -606,16 +614,16 @@ function animate(now=0){
    if(cookTimer>0){cookTimer-=dt;if(cookTimer<=0)finishCooking()}
    if(scareCooldown>0)scareCooldown-=dt;
   }
-  if(started&&camera.position.z>6){
+  if(started&&camera.position.z>6&&camera.position.z<108){
   for(const car of cars){
    car.position.z+=car.userData.direction*dt*7.0;
    for(const wheel of car.userData.wheels||[])wheel.rotation.z+=dt*car.userData.direction*7/.25;
-   if(car.userData.direction>0&&car.position.z>59)car.position.z=10;
-   if(car.userData.direction<0&&car.position.z<10)car.position.z=59;
+   if(car.userData.direction>0&&car.position.z>106)car.position.z=10;
+   if(car.userData.direction<0&&car.position.z<10)car.position.z=106;
   }
   for(const person of walkers){
    person.position.z+=person.userData.walkDirection*dt*.9;
-   if(person.position.z>58||person.position.z<12){
+   if(person.position.z>104||person.position.z<12){
     person.userData.walkDirection*=-1;person.userData.baseYaw=person.userData.walkDirection>0?Math.PI:0;person.rotation.y=person.userData.baseYaw;
    }
    person.userData.animate?.(elapsed,true,dt);
