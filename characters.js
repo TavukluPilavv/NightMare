@@ -10,7 +10,6 @@ export function createHumanCustomer(THREE, options = {}) {
   const pants=mat([0x20242a,0x34302c,0x303b4b,0x4a3831][variant%4]);
   const hair=mat(strange?0x050508:hairColors[variant%hairColors.length]);
   const shoe=mat(0x17191c,.72), eyeWhite=mat(0xf2eee7,.3), iris=mat(strange?0x9e101c:0x493326,.28), pupil=mat(0x09090b,.18), brow=mat(strange?0x080609:0x30221c);
-  const add=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;group.add(o);return o};
   const add=(geo,m,x,y,z,parent=group)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
   if(role==="pedestrian"){
     const skin=mat(skins[variant%skins.length]),shirt=mat(shirts[variant%shirts.length]),pants=mat([0x20242a,0x34302c,0x303b4b,0x4a3831][variant%4]),hair=mat(hairColors[variant%hairColors.length]),shoe=mat(0x17191c,.72);
