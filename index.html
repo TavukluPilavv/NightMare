@@ -287,7 +287,7 @@ function buildWorld(){
  const rim=new THREE.Mesh(new THREE.TorusGeometry(.43,.035,10,40),porcelain);rim.rotation.x=Math.PI/2;rim.scale.set(1,.72,1);rim.position.set(0,1.02,0);sink.add(rim);
  const faucetCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,1.03,-.28),new THREE.Vector3(0,1.38,-.28),new THREE.Vector3(0,1.48,-.12),new THREE.Vector3(0,1.34,.02)]);
  const faucet=new THREE.Mesh(new THREE.TubeGeometry(faucetCurve,24,.035,10,false),chrome);sink.add(faucet);
- const handle=new THREE.Mesh(new THREE.BoxGeometry(.3,.035,.045),chrome);handle.position.set(0,1.29,-.3);sink.add(handle);
+ const faucetLever=new THREE.Mesh(new THREE.BoxGeometry(.3,.035,.045),chrome);faucetLever.position.set(0,1.29,-.3);sink.add(faucetLever);
  const drain=new THREE.Mesh(new THREE.CircleGeometry(.075,20),chrome);drain.rotation.x=-Math.PI/2;drain.position.set(0,.94,.02);sink.add(drain);
  sink.userData={name:'Lavabo',interactive:true};scene.add(sink);interactables.push(sink);
  emergencyLamp=pointLight(0,3.2,-.1,0xffa24b,0,14);
