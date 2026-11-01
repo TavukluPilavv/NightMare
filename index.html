@@ -110,8 +110,8 @@ renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBCol
 document.body.appendChild(renderer.domElement);applyQuality();
 
 const interactables=[],cars=[],walkers=[],streetLights=[],boardVisuals=[];
-let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,lever,boardGroup,grillGroup,fryerGroup,cutterGroup,mopGroup,stain,orderPaper,orderTexture,customer=null,openSign,bathroomDoor;
-let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,breadVisuals=[],apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
+let mainLamp,prepLamp,emergencyLamp,flashlight,phone,patrolPhone,frontDoor,backDoor,backRoomDoor,lever,boardGroup,grillGroup,fryerGroup,cutterGroup,mopGroup,stain,orderPaper,orderTexture,customer=null,openSign,bathroomDoor;
+let started=false,shiftStarted=false,doorOpen=false,backDoorOpen=false,backRoomDoorOpen=false,bathroomDoorOpen=false,blackoutActive=false,hasMop=false,heldItem=null,heldVisual=null,prepItems=[],breadOpen=false,breadVisual=null,breadVisuals=[],apparition=null,apparitionTimer=0,stains=[],shiftClosing=false,bossCallDone=false,shopClosed=false,shiftStartElapsed=0;
 let money=0,orders=0,day=1,elapsed=0,toastTimer=0,phoneRinging=false,patrolRinging=false,patrolCallDone=false;
 let currentOrder=null,customerStrange=false,scareCooldown=0,scareActive=false;
 let fryerUnlocked=false,ringsUnlocked=false,grillCooking=false,fryerCooking=false,cookTimer=0,cookingOutput='';
@@ -224,7 +224,7 @@ function buildWorld(){
  addLabel('ELEKTRİK PANOSU',4.15,2.25,-9.42,2.2,.34);
  // Korku icin kucuk oda kapisi ve loş acil aydinlatma
  addBox(scene,'right room partition',5.55,1.55,-2.55,.2,3.1,3.4,mat(0x4c493f));
- const patrolDoor=createDoor('Arka oda kapısı',4.9,-2.45,1.25);patrolDoor.position.x=4.25;patrolDoor.userData.interactive=true;patrolDoor.userData.name='Arka oda kapısı';
+ backRoomDoor=createDoor('Arka oda kapısı',4.9,-2.45,1.25);backRoomDoor.position.x=4.25;backRoomDoor.userData.interactive=true;backRoomDoor.userData.name='Arka oda kapısı';
  // Disaridaki acik/kapali tabelasi
  openSign=new THREE.Group();openSign.position.set(0,2.35,7.15);addBox(openSign,'sign board',0,0,0,1.35,.48,.12,mat(0x18251f,.5));const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=180;const signCtx=signCanvas.getContext('2d');signCtx.fillStyle='#1d5c38';signCtx.fillRect(0,0,512,180);signCtx.fillStyle='#fff';signCtx.font='bold 90px sans-serif';signCtx.textAlign='center';signCtx.textBaseline='middle';signCtx.fillText('AÇIK',256,92);const signTexture=new THREE.CanvasTexture(signCanvas);const signFace=new THREE.Mesh(new THREE.PlaneGeometry(1.25,.42),new THREE.MeshBasicMaterial({map:signTexture}));signFace.position.z=.07;openSign.add(signFace);openSign.userData={name:'Açık/Kapalı tabelası',interactive:true,signCtx,signTexture};scene.add(openSign);interactables.push(openSign);
  // Ayri tuvalet binasi, dort kabin ve lavabo
@@ -349,7 +349,7 @@ function beginClosingShift(){
  toast('Gün bitti. Patron arıyor…');objective('Arka odaya git ve patronun telefonunu aç.');playWhisper();
 }
 function startNextDay(){
- day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;bathroomDoorOpen=false;frontDoor.rotation.y=0;backDoor.rotation.y=0;bathroomDoor.rotation.y=0;patrolCallDone=false;currentOrder=null;
+ day++;$('day').textContent=String(day);shiftClosing=false;bossCallDone=false;shopClosed=false;shiftStarted=false;doorOpen=false;backDoorOpen=false;backRoomDoorOpen=false;bathroomDoorOpen=false;frontDoor.rotation.y=0;backDoor.rotation.y=0;backRoomDoor.rotation.y=0;bathroomDoor.rotation.y=0;patrolCallDone=false;currentOrder=null;
  stains.forEach(d=>d.visible=false);hasMop=false;mopGroup.visible=true;patrolRinging=false;phoneRinging=false;stopPhoneRing();
  openSign.userData.signCtx.fillStyle='#1d5c38';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('AÇIK',256,92);openSign.userData.signTexture.needsUpdate=true;
  mainLamp.intensity=38;prepLamp.intensity=15;streetLights.forEach(({lamp})=>lamp.intensity=38);
@@ -378,7 +378,7 @@ function interact(target){
  if(!target)return;const name=target.userData.name,type=target.userData.type;
  if(type==='ingredient'){if(heldItem){toast('Elinde zaten '+heldItem+' var. Önce tahtaya koy.');return}addHeldVisual(target.userData.itemName);toast(target.userData.itemName+' aldın. Stok sınırsız.');playPickup();return}
  if(name==='Dükkan kapısı'){doorOpen=!doorOpen;frontDoor.rotation.y=doorOpen?-1.15:0;toast(doorOpen?'Dükkân kapısı açıldı. İçeri gir!':'Dükkân kapandı.');playDoor();return}
- if(name==='Arka oda kapısı'){target.rotation.y=target.rotation.y===0?-1.0:0;toast('Arka oda: dolaplar, paspas ve patronun telefonu.');playDoor();return}
+ if(name==='Arka oda kapısı'){backRoomDoorOpen=!backRoomDoorOpen;target.rotation.y=backRoomDoorOpen?-1.0:0;toast(backRoomDoorOpen?'Arka oda kapısı açıldı.':'Arka oda kapısı kapandı.');playDoor();return}
  if(name==='Tuvalet kapısı'){bathroomDoorOpen=!bathroomDoorOpen;bathroomDoor.rotation.y=bathroomDoorOpen?-1.05:0;toast(bathroomDoorOpen?'Tuvalet açıldı. Lavaboya ve dört kabine gidebilirsin.':'Tuvalet kapandı.');playDoor();return}
  if(name.startsWith('Tuvalet kabini ')){target.rotation.y=target.rotation.y===0?-1.05:0;toast('Tuvalet kabini kapısı açıldı.');playDoor();return}
  if(name==='Açık/Kapalı tabelası'){if(!shiftClosing){toast('Vardiya bitmeden dükkânı kapatamazsın.');return}if(!bossCallDone){toast('Önce patronun telefonunu dinle.');return}if(stains.some(d=>d.visible)){toast('Önce bütün kirleri paspasla.');return}shopClosed=true;openSign.userData.signCtx.fillStyle='#7c1717';openSign.userData.signCtx.fillRect(0,0,512,180);openSign.userData.signCtx.fillStyle='#fff';openSign.userData.signCtx.fillText('KAPALI',256,92);openSign.userData.signTexture.needsUpdate=true;startNextDay();return}
@@ -424,6 +424,7 @@ function updateMovement(dt){
  if(camera.position.z<6.55&&camera.position.z>5.15&&Math.abs(camera.position.x)>1.2)camera.position.z=6.55;
  if(!doorOpen&&camera.position.z<6.55&&oldZ>=6.55&&Math.abs(camera.position.x)<=1.2)camera.position.z=6.55;
  if(camera.position.z<6.55&&camera.position.z> -5.4&&Math.abs(camera.position.x)>5.45)camera.position.x=Math.sign(camera.position.x)*5.45;
+ if(!backRoomDoorOpen&&camera.position.z< -2.45&&camera.position.z> -2.85&&oldZ>=-2.45&&camera.position.x>4.15&&camera.position.x<5.45)camera.position.z=-2.45;
  if(camera.position.z< -5.35&&camera.position.z> -6.8&&!(camera.position.x>3.0&&camera.position.x<5.1))camera.position.z=-5.35;
  if(!backDoorOpen&&camera.position.z< -5.35&&oldZ>=-5.35&&camera.position.x>3&&camera.position.x<5.1)camera.position.z=-5.35;
  if(!bathroomDoorOpen&&camera.position.z< -15.05&&oldZ>=-15.05)camera.position.z=-15.05;
